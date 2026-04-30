@@ -33,7 +33,7 @@ define( 'FRPB_URL',     plugin_dir_url( __FILE__ ) );
  *    Once installed, the plugin will check this repo's "latest" release on a
  *    12h cache and surface updates inside WP admin → Plugins → Updates.
  */
-define( 'FRPB_GITHUB_REPO', 'YOUR_GITHUB_USERNAME/friend-r-profile-builder' );
+define( 'FRPB_GITHUB_REPO', 'melvicmonje/friend-r-profile-builder' );
 
 require_once FRPB_DIR . 'includes/github-updater.php';
 
