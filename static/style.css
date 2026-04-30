@@ -39,6 +39,38 @@ a:hover { text-decoration: underline; }
   font-weight: normal;
   letter-spacing: 0.2px;
 }
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 10px;
+  vertical-align: middle;
+  padding: 2px 8px;
+  border-radius: 10px;
+  transition: color 200ms, background 200ms;
+}
+.save-status::before {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 1;
+}
+.save-status.saved {
+  color: #4a7d2a;
+  background: #ecf5dd;
+}
+.save-status.saved::before { content: '\2713'; }
+.save-status.saving {
+  color: #b53a0c;
+  background: #ffe1c8;
+}
+.save-status.saving::before {
+  content: '\21BB';
+  animation: save-spin 0.9s linear infinite;
+}
+@keyframes save-spin { to { transform: rotate(-360deg); } }
 .logo-mini {
   display: inline-block; width: 22px; height: 22px;
   border: 2px solid #888; border-radius: 50%;

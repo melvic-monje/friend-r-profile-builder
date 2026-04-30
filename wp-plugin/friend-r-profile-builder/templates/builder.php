@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     <div class="builder-title">
       <span class="logo-mini"></span>
       <div>
-        <h1>friend_r Profile Builder</h1>
+        <h1>friend_r Profile Builder <span id="save-status" class="save-status saved">Saved</span></h1>
         <p class="builder-subtitle">A fan-made nostalgia tribute &middot; Not affiliated with Friendster&reg;</p>
       </div>
     </div>

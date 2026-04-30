@@ -59,6 +59,23 @@
   }
   function saveState() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (_) {}
+    flashSaveStatus();
+  }
+
+  // Visual save status indicator: "Saving..." → "Saved"
+  let _saveStatusTimer = null;
+  function flashSaveStatus() {
+    const el = document.getElementById('save-status');
+    if (!el) return;
+    el.classList.remove('saved');
+    el.classList.add('saving');
+    el.textContent = 'Saving…';
+    clearTimeout(_saveStatusTimer);
+    _saveStatusTimer = setTimeout(() => {
+      el.classList.remove('saving');
+      el.classList.add('saved');
+      el.textContent = 'Saved';
+    }, 500);
   }
 
   // ---------------- URL hash codec (URL-safe base64 of UTF-8 JSON) ----------------
@@ -90,6 +107,28 @@
     // Fallback: hash-encoded full state (works without backend)
     const base = window.location.origin + window.location.pathname;
     return base + '#p=' + encodeState(state);
+  }
+
+  // Validate that the user has typed a username. Returns true if OK,
+  // otherwise focuses the username field, scrolls it into view, flags the hint,
+  // and returns false so the caller can abort.
+  function requireUsername() {
+    const username = (state.username || '').trim();
+    if (username.length >= 3) return true;
+    const form = $('#profile-form');
+    const input = form && form.elements.username;
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const hint = $('#username-hint');
+      if (hint) {
+        hint.classList.remove('username-status-ok');
+        hint.classList.add('username-status-bad');
+        hint.innerHTML = '&#x2717; Pick a username first (3+ chars). It becomes your share link.';
+      }
+    }
+    showToast('Pick a username first.');
+    return false;
   }
 
   // Save the profile to the backend (when configured + username set).
@@ -901,6 +940,7 @@
 
     // If we have a backend, save the profile first so the URL becomes ?p=<username_xxxx>
     if (HAS_BACKEND) {
+      if (!requireUsername()) return;
       try {
         showToast('Saving your profile…');
         await saveProfileToBackend();
@@ -989,8 +1029,29 @@
   // ---------------- View mode toggle ----------------
   function bindViewMode() {
     const viewBtn = $('#view-mode-btn');
-    if (viewBtn) viewBtn.addEventListener('click', () => {
-      window.location.hash = 'p=' + encodeState(state);
+    if (!viewBtn) return;
+    viewBtn.addEventListener('click', async () => {
+      // With a backend, do the same save flow as Share — we get a short URL + verify the
+      // profile actually saves before we drop the user into view-mode.
+      if (HAS_BACKEND) {
+        if (!requireUsername()) return;
+        try {
+          showToast('Saving your profile…');
+          await saveProfileToBackend();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message || 'Could not save profile.');
+          return;
+        }
+        // Update the address bar to the short personalized URL (no page reload)
+        try {
+          const target = `?p=${encodeURIComponent(state.username)}`;
+          window.history.pushState(null, '', target);
+        } catch (_) {}
+      } else {
+        // No backend — fall back to hash URL
+        window.location.hash = 'p=' + encodeState(state);
+      }
       enterViewMode();
     });
   }

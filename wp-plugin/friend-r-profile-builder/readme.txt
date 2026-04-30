@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,11 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.5 =
+* Adds a "Saving… / Saved" status pill in the builder header so visitors can see autosave is happening (every keystroke saves to localStorage).
+* Preview button now requires a username (same as Share). Without one, the field gets focused + an inline error is shown instead of silently producing a long fallback URL.
+* Preview now uses the proper save flow — the address bar updates to the short personalized URL `?p=username_xxxx` instead of the long base64 hash.
 
 = 1.0.4 =
 * Skip the email gate for logged-in WP users — their email is already known. The plugin auto-creates / reuses a lead row tied to their WP account email so admins testing the builder don't have to re-enter their email and the leads table stays accurate.
