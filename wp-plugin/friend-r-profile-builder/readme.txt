@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,8 +61,12 @@ Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` bloc
 
 == Changelog ==
 
+= 1.0.1 =
+* First public release on GitHub.
+* Hooks the GitHub-Releases-based auto-updater so future versions appear in WP admin → Plugins → Updates.
+
 = 1.0.0 =
-* Initial release.
+* Initial private build.
 
 == Credits ==
 
