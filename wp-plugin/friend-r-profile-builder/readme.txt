@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,16 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.2 =
+* Email gate on builder entry (splash modal) — visitors enter email + opt-in before building
+* Personalized share URLs: `yoursite.com/build/?p=<username>_<rand4>` — random 4-char suffix is auto-appended so usernames never collide
+* New WP DB table `wp_frpb_profiles` storing leads + their profile state (text only — photos go to Cloudinary)
+* Admin → friend_r → Leads: searchable table with stats, filter by opt-in, CSV export, per-row delete
+* Cloudinary integration: photo + bg image uploads go to your Cloudinary account (set `FRPB_CLOUDINARY_CLOUD_NAME` + `FRPB_CLOUDINARY_UPLOAD_PRESET` in the main plugin file)
+* 5 MB max file size on uploads, with friendly error messages
+* Friendlier WP-logged-in greeting (uses first name → nickname → user_login → strips email format if it slips through)
+* REST endpoints `frpb/v1/lead`, `frpb/v1/save-profile`, `frpb/v1/profile/{username}` — all nonce-validated + IP rate-limited (5/hr)
 
 = 1.0.1 =
 * First public release on GitHub.

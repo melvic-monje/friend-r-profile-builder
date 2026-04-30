@@ -11,12 +11,19 @@
 (function () {
   'use strict';
 
+  // ---------------- Backend config (from WP wp_localize_script, optional) ----------------
+  const CFG = (typeof window.FRPB_CFG === 'object' && window.FRPB_CFG) ? window.FRPB_CFG : {};
+  const HAS_BACKEND = !!CFG.restUrl;
+  const HAS_CLOUDINARY = !!(CFG.cloudinaryCloud && CFG.cloudinaryPreset);
+
   // ---------------- State ----------------
   const STORAGE_KEY = 'friendster-builder-v1';
+  const LEAD_KEY = 'friendster-builder-lead-v1'; // {leadId, email}
   const defaultState = {
     full_name: 'Your Name',
     tagline: 'made of words, but trying to mean it',
     shoutout: '',
+    username: '',
     gender: '',
     age: '',
     location: '',
@@ -75,13 +82,121 @@
     return JSON.parse(json);
   }
   function buildShareUrl() {
+    // Prefer the slugged URL when we have a backend + a username
+    if (HAS_BACKEND && state.username) {
+      const base = CFG.pageUrl || (window.location.origin + window.location.pathname);
+      return base + '?p=' + encodeURIComponent(state.username);
+    }
+    // Fallback: hash-encoded full state (works without backend)
     const base = window.location.origin + window.location.pathname;
     return base + '#p=' + encodeState(state);
+  }
+
+  // Save the profile to the backend (when configured + username set).
+  // Returns the response object on success, null when no backend.
+  // Backend assigns the final suffixed username — we update state.username with it.
+  async function saveProfileToBackend() {
+    if (!HAS_BACKEND) return null;
+    if (!state.username || state.username.length < 3) {
+      throw new Error('Pick a username first (at least 3 characters).');
+    }
+    const lead = loadLead();
+    const body = {
+      lead_id: lead && lead.leadId ? lead.leadId : 0,
+      username: state.username, // base; server appends _<rand4>
+      display_name: state.full_name || state.username,
+      page_url: CFG.pageUrl || (window.location.origin + window.location.pathname),
+      state: state
+    };
+    const r = await apiPost('save-profile', body);
+    if (r && r.ok && r.username) {
+      // Adopt the server-assigned username (e.g. "melvic_a3k7") so the share URL is right
+      state.username = r.username;
+      saveState();
+      // Also reflect it in the form input
+      const inp = $('#profile-form') && $('#profile-form').elements.username;
+      if (inp) inp.value = state.username;
+    }
+    return r;
   }
   function parseHashState() {
     const m = (window.location.hash || '').match(/[#&]p=([^&]+)/);
     if (!m) return null;
     try { return decodeState(decodeURIComponent(m[1])); } catch (_) { return null; }
+  }
+
+  // Pull `?p=...` from the query string. If it looks like a username (no equals/long base64),
+  // we'll try to fetch from the backend.
+  function parseSlugFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('p');
+    if (!p) return null;
+    // If it matches our username rules, treat as a username slug
+    if (/^[a-z0-9_-]{3,32}$/i.test(p)) return p;
+    return null;
+  }
+  async function fetchProfileBySlug(slug) {
+    if (!HAS_BACKEND) return null;
+    try {
+      const r = await apiGet(`profile/${encodeURIComponent(slug)}`);
+      if (r && r.ok && r.state) return r.state;
+    } catch (_) { /* 404 etc */ }
+    return null;
+  }
+
+  // ---------------- Backend API helpers ----------------
+  function apiUrl(path) { return CFG.restUrl + path.replace(/^\//, ''); }
+
+  async function apiPost(path, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (CFG.nonce) headers['X-FRPB-Nonce'] = CFG.nonce;
+    if (CFG.nonce) headers['X-WP-Nonce'] = CFG.nonce;
+    const res = await fetch(apiUrl(path), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body || {})
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(json.message || 'Request failed'), { status: res.status, body: json });
+    return json;
+  }
+
+  async function apiGet(path) {
+    const res = await fetch(apiUrl(path), {
+      headers: CFG.nonce ? { 'X-WP-Nonce': CFG.nonce } : {}
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(json.message || 'Request failed'), { status: res.status, body: json });
+    return json;
+  }
+
+  function loadLead() {
+    try { return JSON.parse(localStorage.getItem(LEAD_KEY) || 'null'); } catch (_) { return null; }
+  }
+  function saveLead(lead) {
+    try { localStorage.setItem(LEAD_KEY, JSON.stringify(lead)); } catch (_) {}
+  }
+
+  // ---------------- Cloudinary upload ----------------
+  async function uploadToCloudinary(blob, filename) {
+    if (!HAS_CLOUDINARY) throw new Error('Cloudinary not configured');
+    const fd = new FormData();
+    fd.append('file', blob, filename || 'upload.jpg');
+    fd.append('upload_preset', CFG.cloudinaryPreset);
+    const url = `https://api.cloudinary.com/v1_1/${CFG.cloudinaryCloud}/image/upload`;
+    const res = await fetch(url, { method: 'POST', body: fd });
+    const json = await res.json();
+    if (!res.ok || !json.secure_url) throw new Error(json.error?.message || 'Cloudinary upload failed');
+    return json.secure_url;
+  }
+  // Convert a data URL (from compression) to a Blob
+  function dataUrlToBlob(dataUrl) {
+    const [meta, b64] = dataUrl.split(',');
+    const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
   }
 
   // ---------------- HTML sanitizer for embed code (Glitterfy etc.) ----------------
@@ -246,6 +361,15 @@
       };
     }
     return null;
+  }
+
+  // ---------------- Upload size limit ----------------
+  const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB cap on input file size
+  function checkFileSize(file) {
+    if (!file) throw new Error('No file');
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error(`That file is ${(file.size / 1024 / 1024).toFixed(1)} MB. Max is 5 MB — try a smaller version.`);
+    }
   }
 
   // ---------------- Image compression ----------------
@@ -615,39 +739,115 @@
       }
     });
 
-    // Photo upload
+    // Photo upload — Cloudinary if configured, else inline data URL
     const photoInput = form.querySelector('input[data-photo]');
     photoInput.addEventListener('change', async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       try {
+        checkFileSize(file);
         showToast('Compressing photo…');
         const data = await compressImage(file, 400, 0.8);
-        state.photo_data = data;
+        if (HAS_CLOUDINARY) {
+          showToast('Uploading…');
+          const url = await uploadToCloudinary(dataUrlToBlob(data), 'photo.jpg');
+          state.photo_data = url;
+        } else {
+          state.photo_data = data;
+        }
         saveState();
         render();
         showToast('Photo updated.');
       } catch (err) {
         console.error(err);
-        showToast('Could not load that image.');
+        showToast(err.message || 'Photo upload failed.');
       }
     });
 
-    // BG upload
+    // BG upload — Cloudinary if configured, else inline data URL
     const bgInput = form.querySelector('input[data-bg]');
     bgInput.addEventListener('change', async (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       try {
+        checkFileSize(file);
         showToast('Compressing background…');
         const data = await compressImage(file, 1200, 0.7);
-        state.bg_data = data;
+        if (HAS_CLOUDINARY) {
+          showToast('Uploading…');
+          const url = await uploadToCloudinary(dataUrlToBlob(data), 'bg.jpg');
+          state.bg_data = url;
+        } else {
+          state.bg_data = data;
+        }
         saveState();
         render();
         showToast('Background updated.');
       } catch (err) {
         console.error(err);
-        showToast('Could not load that image.');
+        showToast(err.message || 'Background upload failed.');
+      }
+    });
+  }
+
+  // ---------------- Username URL preview (no live uniqueness check — server appends _<rand4>) ----------------
+  function bindUsernameField() {
+    const form = $('#profile-form');
+    if (!form) return;
+    const input = form.elements.username;
+    const hint = $('#username-hint');
+    if (!input) return;
+
+    const baseUrl = CFG.pageUrl || (window.location.origin + window.location.pathname);
+    const updatePreview = () => {
+      const v = (input.value || '').trim().toLowerCase();
+      const sample = v ? `${v}_xxxx` : 'yourname_xxxx';
+      hint.innerHTML = `Your share link will be: <code>${esc(baseUrl)}?p=${esc(sample)}</code><br><span class="muted small">We'll add a unique 4-character tag automatically &mdash; no need to worry about taken names.</span>`;
+    };
+
+    input.addEventListener('input', () => {
+      const v = (input.value || '').trim().toLowerCase();
+      input.value = v.replace(/[^a-z0-9_-]/g, '').slice(0, 27); // leave room for _xxxx suffix
+      updatePreview();
+    });
+
+    updatePreview();
+  }
+
+  // ---------------- Email gate ----------------
+  function showEmailGate() {
+    const m = $('#email-gate');
+    if (!m) return;
+    m.hidden = false;
+  }
+  function hideEmailGate() {
+    const m = $('#email-gate');
+    if (m) m.hidden = true;
+  }
+  function bindEmailGate() {
+    const form = $('#email-gate-form');
+    const errorEl = $('#email-gate-error');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const fd = new FormData(form);
+      const email = String(fd.get('email') || '').trim();
+      const opt_in = !!fd.get('opt_in');
+      if (!email) return;
+      try {
+        const r = await apiPost('lead', { email, opt_in });
+        if (r && r.lead_id) {
+          saveLead({ leadId: r.lead_id, email, opt_in });
+          hideEmailGate();
+          showToast('Welcome! Build away.');
+        } else {
+          throw new Error('Bad response');
+        }
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = err.message || 'Something went wrong. Try again?';
+        errorEl.hidden = false;
       }
     });
   }
@@ -696,8 +896,21 @@
   }
 
   // ---------------- Share modal ----------------
-  function openShareModal() {
+  async function openShareModal() {
     const modal = $('#share-modal');
+
+    // If we have a backend, save the profile first so the URL becomes ?p=<username_xxxx>
+    if (HAS_BACKEND) {
+      try {
+        showToast('Saving your profile…');
+        await saveProfileToBackend();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Could not save profile.');
+        return; // don't open modal with a broken URL
+      }
+    }
+
     const url = buildShareUrl();
     $('#share-url').value = url;
     const enc = encodeURIComponent(url);
@@ -865,16 +1078,30 @@
   }
 
   // ---------------- Init ----------------
-  document.addEventListener('DOMContentLoaded', () => {
-    // If URL has #p=..., hydrate state from it and enter view-mode
-    const hashState = parseHashState();
-    if (hashState) {
-      state = { ...defaultState, ...hashState };
-      document.body.classList.add('view-mode');
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Check for ?p=<username> — fetch profile from backend
+    const slug = parseSlugFromQuery();
+    if (slug && HAS_BACKEND) {
+      const remoteState = await fetchProfileBySlug(slug);
+      if (remoteState) {
+        state = { ...defaultState, ...remoteState };
+        document.body.classList.add('view-mode');
+      }
     }
+    // 2. Otherwise check for #p=<base64> — hash-encoded profile (fallback, backend-less)
+    if (!document.body.classList.contains('view-mode')) {
+      const hashState = parseHashState();
+      if (hashState) {
+        state = { ...defaultState, ...hashState };
+        document.body.classList.add('view-mode');
+      }
+    }
+
     hydrateForm();
     render();
     bindForm();
+    bindUsernameField();
+    bindEmailGate();
     bindReset();
     bindShare();
     bindViewMode();
@@ -885,8 +1112,17 @@
     if (parseYouTubeId(state.music_url)) {
       fetchYouTubeMeta(state.music_url).then(() => render());
     }
-    // If we're starting in view-mode (URL had #p=...), show the intro modal
-    if (document.body.classList.contains('view-mode')) showIntroModal();
+
+    // 3. View-mode (visiting a shared profile) → show intro modal as before
+    if (document.body.classList.contains('view-mode')) {
+      showIntroModal();
+      return;
+    }
+
+    // 4. Builder mode + backend configured → show email gate if no lead captured yet
+    if (HAS_BACKEND && !loadLead()) {
+      showEmailGate();
+    }
 
     // Esc to close share modal
     document.addEventListener('keydown', (e) => {

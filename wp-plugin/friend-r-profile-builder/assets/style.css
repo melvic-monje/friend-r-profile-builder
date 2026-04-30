@@ -994,6 +994,41 @@ body:not(.view-mode) .floating-edit-btn {  display: none;  }
 
 .frpb-shell .intro-enter:hover {  transform: translateY(-1px); box-shadow: 0 8px 24px rgba(204,51,0,0.5);  }
 
+/* Email gate form (lives inside the same .intro-modal styling) */
+.frpb-shell #email-gate-form {  display: flex; flex-direction: column; gap: 10px; margin-top: 8px;  }
+
+.frpb-shell #email-gate-form input[type="email"] { 
+  font-size: 14px; padding: 10px 12px;
+  border: 1px solid #ccc; border-radius: 6px;
+  font-family: inherit;
+  text-align: center;
+ }
+
+.frpb-shell #email-gate-form input[type="email"]:focus {  outline: 2px solid #ec6428; border-color: #cc3300;  }
+
+.frpb-shell .optin-label { 
+  display: flex; gap: 8px; align-items: flex-start;
+  font-size: 11px; color: #666; text-align: left;
+  padding: 0 4px;
+  cursor: pointer;
+  font-weight: normal;
+ }
+
+.frpb-shell .optin-label input {  margin-top: 2px; flex-shrink: 0;  }
+
+.frpb-shell .email-gate-error { 
+  background: #fbe2e2; border: 1px solid #c97070; color: #843030;
+  padding: 6px 10px; border-radius: 4px; font-size: 11px;
+ }
+
+
+.frpb-shell .required-mark {  color: #cc3300;  }
+
+.frpb-shell .username-status-ok {  color: #3d6010; font-weight: bold;  }
+
+.frpb-shell .username-status-bad {  color: #843030; font-weight: bold;  }
+
+
 .frpb-shell .intro-make-yours {  margin-top: 16px; font-size: 11px;  }
 
 .frpb-shell .intro-make-yours a {  color: #888; font-weight: normal; text-decoration: underline;  }

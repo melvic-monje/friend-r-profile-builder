@@ -48,6 +48,10 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
             <input type="text" name="shoutout" maxlength="120" placeholder="What's on your mind right now?">
             <span class="hint">Like a status update &mdash; short and snappy. Shows in the &ldquo;Shoutout&rdquo; box.</span>
           </label>
+          <label>Username <span class="required-mark">*</span>
+            <input type="text" name="username" maxlength="32" placeholder="e.g. melvic" autocomplete="off">
+            <span class="hint" id="username-hint">Your share link will be: <code id="username-preview">your-page/?p=username</code></span>
+          </label>
         </fieldset>
 
         <fieldset>
@@ -182,11 +186,45 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 <a id="edit-mode-btn" href="?" class="floating-edit-btn">&laquo; Edit / Make Your Own</a>
 
+<!-- Email gate splash (shown on first builder visit) -->
+<div id="email-gate" class="intro-modal" hidden>
+  <div class="intro-modal-card">
+    <div class="intro-eyebrow">friend_r &mdash; one quick step</div>
+    <h2>Drop your email to start building</h2>
+    <p>Welcome. To start customizing your friend_r profile,
+       just enter your email below. We'll save your spot and your link.</p>
+    <form id="email-gate-form">
+      <input type="email" name="email" placeholder="you@example.com" required>
+      <label class="optin-label">
+        <input type="checkbox" name="opt_in" value="1">
+        <span>Send me occasional emails from VCFY about updates and new features.</span>
+      </label>
+      <button type="submit" class="btn btn-primary intro-enter">
+        Start Building &raquo;
+      </button>
+      <div class="email-gate-error" id="email-gate-error" hidden></div>
+    </form>
+    <p class="intro-disclaimer">
+      We won't share your email. Unsubscribe anytime. Fan-made recreation for entertainment only.
+      Not affiliated with Friendster&reg;.
+    </p>
+  </div>
+</div>
+
 <div id="intro-modal" class="intro-modal" hidden>
   <div class="intro-modal-card">
     <?php if ( is_user_logged_in() ) :
       $frpb_current = wp_get_current_user();
-      $frpb_name    = $frpb_current->first_name ? $frpb_current->first_name : $frpb_current->display_name;
+      // Prefer first_name → nickname → username — and if it's still email-shaped, take the part before "@"
+      $frpb_name = $frpb_current->first_name;
+      if ( ! $frpb_name ) {
+        $frpb_name = $frpb_current->nickname && $frpb_current->nickname !== $frpb_current->user_login
+          ? $frpb_current->nickname : $frpb_current->user_login;
+      }
+      if ( strpos( $frpb_name, '@' ) !== false ) {
+        $frpb_name = substr( $frpb_name, 0, strpos( $frpb_name, '@' ) );
+      }
+      $frpb_name = $frpb_name ? $frpb_name : 'friend';
       ?>
       <div class="intro-eyebrow">Welcome back</div>
       <h2>Thank you for using this, <?php echo esc_html( $frpb_name ); ?> <span class="wave">&#128075;</span></h2>
