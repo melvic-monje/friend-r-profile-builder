@@ -3,7 +3,7 @@
  * Plugin Name:       friend_r Profile Builder
  * Plugin URI:        https://vcfyit.com
  * Description:       Drop a [friend_r_builder] shortcode into any page to embed a retro profile builder. A fan-made nostalgia tribute by VCFY I.T. Solutions.
- * Version:           1.0.6
+ * Version:           1.0.7
  * Requires at least: 5.5
  * Requires PHP:      7.2
  * Author:            VCFY I.T. Solutions
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Block direct access.
 }
 
-define( 'FRPB_VERSION', '1.0.6' );
+define( 'FRPB_VERSION', '1.0.7' );
 define( 'FRPB_FILE',    __FILE__ );
 define( 'FRPB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'FRPB_URL',     plugin_dir_url( __FILE__ ) );
@@ -150,7 +150,7 @@ function frpb_enqueue_assets() {
 	// Pass REST URL, nonce, Cloudinary config, current page URL, auto-lead to the JS bundle.
 	wp_localize_script( 'frpb-app', 'FRPB_CFG', array(
 		'restUrl'          => esc_url_raw( rest_url( 'frpb/v1/' ) ),
-		'nonce'            => wp_create_nonce( 'frpb_rest' ),
+		'nonce'            => wp_create_nonce( 'wp_rest' ),
 		'pageUrl'          => esc_url_raw( get_permalink() ),
 		'cloudinaryCloud'  => defined( 'FRPB_CLOUDINARY_CLOUD_NAME' ) ? FRPB_CLOUDINARY_CLOUD_NAME : '',
 		'cloudinaryPreset' => defined( 'FRPB_CLOUDINARY_UPLOAD_PRESET' ) ? FRPB_CLOUDINARY_UPLOAD_PRESET : '',

@@ -53,9 +53,12 @@ function frpb_rate_limit_ok( $bucket, $limit = 5, $window = HOUR_IN_SECONDS ) {
 }
 
 function frpb_check_nonce( $request ) {
-	$nonce = $request->get_header( 'X-FRPB-Nonce' );
+	// Use the standard wp_rest nonce action — same one WP itself validates for
+	// logged-in REST requests, so we don't fail with "cookie check failed".
+	$nonce = $request->get_header( 'X-WP-Nonce' );
+	if ( ! $nonce ) { $nonce = $request->get_header( 'X-FRPB-Nonce' ); }
 	if ( ! $nonce ) { $nonce = $request->get_param( '_nonce' ); }
-	return wp_verify_nonce( $nonce, 'frpb_rest' );
+	return $nonce && wp_verify_nonce( $nonce, 'wp_rest' );
 }
 
 function frpb_hash_ip() {
