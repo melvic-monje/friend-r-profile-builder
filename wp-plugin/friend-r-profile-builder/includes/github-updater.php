@@ -50,6 +50,57 @@ class FRPB_GitHub_Updater {
 		add_filter( 'plugins_api',                            array( $this, 'plugin_info' ), 10, 3 );
 		add_filter( 'upgrader_source_selection',              array( $this, 'fix_source_dir' ), 10, 4 );
 		add_action( 'upgrader_process_complete',              array( $this, 'purge_cache' ),    10, 2 );
+		add_filter( 'plugin_row_meta',                        array( $this, 'add_check_updates_link' ), 10, 2 );
+		add_action( 'admin_post_frpb_check_updates',          array( $this, 'handle_check_updates' ) );
+		add_action( 'admin_notices',                          array( $this, 'check_updates_notice' ) );
+	}
+
+	/**
+	 * Adds a "Check for updates" link to our plugin's row on the Plugins page.
+	 */
+	public function add_check_updates_link( $links, $file ) {
+		if ( $file !== $this->plugin_basename ) {
+			return $links;
+		}
+		$url = wp_nonce_url(
+			admin_url( 'admin-post.php?action=frpb_check_updates' ),
+			'frpb_check_updates'
+		);
+		$links[] = '<a href="' . esc_url( $url ) . '">Check for updates</a>';
+		return $links;
+	}
+
+	/**
+	 * Handler for the "Check for updates" link click.
+	 * Clears our cached release info + forces WP to re-poll.
+	 */
+	public function handle_check_updates() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'frpb_check_updates' );
+
+		// Drop our own cached release info
+		delete_site_transient( $this->cache_key );
+		// Drop WP's plugin update cache so it re-runs the check on next load
+		delete_site_transient( 'update_plugins' );
+		// Force the check now
+		wp_update_plugins();
+
+		wp_safe_redirect( add_query_arg( 'frpb_update_checked', '1', admin_url( 'plugins.php' ) ) );
+		exit;
+	}
+
+	public function check_updates_notice() {
+		if ( ! isset( $_GET['frpb_update_checked'] ) ) {
+			return;
+		}
+		$release = $this->get_remote_release();
+		if ( $release && version_compare( $release['version'], FRPB_VERSION, '>' ) ) {
+			echo '<div class="notice notice-warning is-dismissible"><p><strong>friend_r Profile Builder:</strong> Update available — version ' . esc_html( $release['version'] ) . ' is on GitHub. Refresh this page to see the update prompt.</p></div>';
+		} else {
+			echo '<div class="notice notice-success is-dismissible"><p><strong>friend_r Profile Builder:</strong> You are on the latest version (' . esc_html( FRPB_VERSION ) . ').</p></div>';
+		}
 	}
 
 	/**
