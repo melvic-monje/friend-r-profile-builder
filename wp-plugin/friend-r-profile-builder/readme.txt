@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.6 =
+* Fix: email gate not showing for logged-out visitors. wp_localize_script casts integers to strings, so the JS check `if (CFG.autoLeadId)` was treating `"0"` as truthy and saving a junk lead with id 0, which then suppressed the gate. Now coerces to a real int + cleans up any stale junk leads in localStorage.
 
 = 1.0.5 =
 * Adds a "Saving… / Saved" status pill in the builder header so visitors can see autosave is happening (every keystroke saves to localStorage).

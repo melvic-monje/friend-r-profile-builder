@@ -140,8 +140,9 @@
       throw new Error('Pick a username first (at least 3 characters).');
     }
     const lead = loadLead();
+    const leadIdInt = lead && lead.leadId ? (parseInt(lead.leadId, 10) || 0) : 0;
     const body = {
-      lead_id: lead && lead.leadId ? lead.leadId : 0,
+      lead_id: leadIdInt,
       username: state.username, // base; server appends _<rand4>
       display_name: state.full_name || state.username,
       page_url: CFG.pageUrl || (window.location.origin + window.location.pathname),
@@ -1182,11 +1183,22 @@
 
     // 4. Builder mode + backend configured → handle email gate
     if (HAS_BACKEND) {
-      // If WP gave us an auto-lead (logged-in user), adopt it silently — no gate
-      if (CFG.autoLeadId && !loadLead()) {
-        saveLead({ leadId: CFG.autoLeadId, email: CFG.autoLeadEmail || '', opt_in: 0, autoFromWp: true });
+      // wp_localize_script stringifies ints, so "0"/"" come through as truthy strings.
+      // Coerce to a real number and only treat > 0 as a valid lead id.
+      const validAutoLeadId = parseInt(CFG.autoLeadId, 10) || 0;
+
+      // Clean up junk leads from earlier versions (leadId "0" or missing).
+      const existing = loadLead();
+      if (existing && !(parseInt(existing.leadId, 10) > 0)) {
+        try { localStorage.removeItem(LEAD_KEY); } catch (_) {}
       }
-      // Show gate only if we still have no lead
+
+      // Adopt a real auto-lead from WP login, if any.
+      if (validAutoLeadId > 0 && !loadLead()) {
+        saveLead({ leadId: validAutoLeadId, email: CFG.autoLeadEmail || '', opt_in: 0, autoFromWp: true });
+      }
+
+      // No valid lead yet → ask for email
       if (!loadLead()) {
         showEmailGate();
       }
