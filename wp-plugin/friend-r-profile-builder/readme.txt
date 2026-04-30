@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.3 =
+* Adds a "Check for updates" link to the plugin row on Plugins → Installed Plugins. Click clears the GitHub cache and forces an immediate update check.
 
 = 1.0.2 =
 * Email gate on builder entry (splash modal) — visitors enter email + opt-in before building
