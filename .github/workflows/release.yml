@@ -1,0 +1,49 @@
+name: Release plugin zip
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build plugin assets (scoped CSS + sync app.js)
+        run: |
+          node wp-plugin/scope-css.js
+          cp static/app.js wp-plugin/friend-r-profile-builder/assets/app.js
+
+      - name: Verify plugin syntax
+        run: |
+          # PHP syntax check (PHP is preinstalled on ubuntu-latest)
+          php -l wp-plugin/friend-r-profile-builder/friend-r-profile-builder.php
+          php -l wp-plugin/friend-r-profile-builder/templates/builder.php
+          # JS parse check
+          node -c wp-plugin/friend-r-profile-builder/assets/app.js
+
+      - name: Zip plugin
+        run: |
+          cd wp-plugin
+          zip -rq friend-r-profile-builder.zip friend-r-profile-builder/
+          ls -lh friend-r-profile-builder.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: wp-plugin/friend-r-profile-builder.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
