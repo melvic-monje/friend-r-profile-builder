@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a2552"/>
+      <stop offset="55%" stop-color="#a04a3a"/>
+      <stop offset="100%" stop-color="#f0a050"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="32%" cy="62%" r="22%">
+      <stop offset="0%" stop-color="#fff0b0"/>
+      <stop offset="60%" stop-color="#ffb060" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffb060" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#dusk)"/>
+  <!-- soft sun -->
+  <circle cx="64" cy="124" r="48" fill="url(#sun)"/>
+  <circle cx="64" cy="124" r="9" fill="#fff0c8" opacity="0.85"/>
+  <!-- faint stars in upper sky -->
+  <g fill="#fff" opacity="0.6">
+    <circle cx="36" cy="22" r="0.7"/>
+    <circle cx="92" cy="14" r="0.5"/>
+    <circle cx="148" cy="28" r="0.8"/>
+    <circle cx="178" cy="48" r="0.5"/>
+    <circle cx="120" cy="40" r="0.6"/>
+  </g>
+  <!-- horizon haze -->
+  <rect x="0" y="138" width="200" height="3" fill="#000" opacity="0.18"/>
+  <!-- silhouette: side-profile head + shoulders, facing right -->
+  <path fill="#0a0612" d="
+    M 200 200
+    L 200 125
+    C 185 122, 170 118, 158 110
+    C 152 106, 148 100, 146 92
+    C 144 86, 144 80, 142 74
+    C 138 58, 124 48, 108 50
+    C 94 52, 84 64, 82 78
+    C 81 86, 84 94, 88 100
+    C 92 106, 92 112, 88 116
+    C 80 124, 70 128, 60 134
+    C 48 142, 38 152, 32 164
+    C 28 174, 26 188, 26 200
+    Z"/>
+  <!-- hair tuft -->
+  <path fill="#0a0612" d="M 102 50 q 8 -8 18 -4 q -2 6 -10 8 z"/>
+</svg>

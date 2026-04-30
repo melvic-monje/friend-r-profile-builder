@@ -1,0 +1,127 @@
+<% const pageTitle = 'My Home' %>
+<%- include('partials/header') %>
+
+<div class="two-col">
+  <div class="col-main">
+    <div class="box">
+      <div class="box-title">Welcome back, <%= user.full_name %>!</div>
+      <div class="box-body">
+        <p>You have <strong><%= friends.length %></strong> friend<%= friends.length === 1 ? '' : 's' %><% if (pendingRequests.length) { %>, and <strong><%= pendingRequests.length %></strong> pending friend request<%= pendingRequests.length === 1 ? '' : 's' %><% } %>.</p>
+        <p><a href="/profile/<%= user.id %>">View my profile &raquo;</a> &middot; <a href="/profile/<%= user.id %>/edit">Edit profile &raquo;</a></p>
+      </div>
+    </div>
+
+    <% if (pendingRequests.length > 0) { %>
+    <div class="box">
+      <div class="box-title">Friend Requests</div>
+      <div class="box-body">
+        <% pendingRequests.forEach(function(r) { %>
+          <div class="request-item">
+            <img src="<%= r.photo_url || '/img/default-avatar.svg' %>" class="thumb">
+            <div class="request-info">
+              <a href="/profile/<%= r.id %>"><strong><%= r.full_name %></strong></a>
+              <% if (r.tagline) { %><div class="muted small"><%= r.tagline %></div><% } %>
+            </div>
+            <div class="request-actions">
+              <form method="post" action="/friends/accept/<%= r.friendship_id %>" style="display:inline">
+                <button class="btn btn-primary btn-sm">Approve</button>
+              </form>
+              <form method="post" action="/friends/decline/<%= r.friendship_id %>" style="display:inline">
+                <button class="btn btn-sm">Decline</button>
+              </form>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (pendingTestimonials.length > 0) { %>
+    <div class="box">
+      <div class="box-title">Pending Testimonials</div>
+      <div class="box-body">
+        <% pendingTestimonials.forEach(function(t) { %>
+          <div class="testimonial">
+            <img src="<%= t.author_photo || '/img/default-avatar.svg' %>" class="thumb">
+            <div class="testimonial-body">
+              <strong><%= t.author_name %></strong> wrote:
+              <p><%= t.body %></p>
+              <form method="post" action="/testimonials/<%= t.id %>/approve" style="display:inline">
+                <button class="btn btn-primary btn-sm">Approve</button>
+              </form>
+              <form method="post" action="/testimonials/<%= t.id %>/reject" style="display:inline">
+                <button class="btn btn-sm">Reject</button>
+              </form>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="box">
+      <div class="box-title">Post a Bulletin</div>
+      <div class="box-body">
+        <form method="post" action="/bulletins">
+          <input type="text" name="subject" placeholder="Subject" required style="width:100%; margin-bottom:6px;">
+          <textarea name="body" rows="3" placeholder="What's on your mind?" required style="width:100%;"></textarea>
+          <div style="margin-top:6px;"><button class="btn btn-primary btn-sm">Post Bulletin</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Bulletin Board</div>
+      <div class="box-body">
+        <% if (recentBulletins.length === 0) { %>
+          <p class="muted">No bulletins yet. Add some friends, or post one yourself!</p>
+        <% } %>
+        <% recentBulletins.forEach(function(b) { %>
+          <div class="bulletin">
+            <img src="<%= b.photo_url || '/img/default-avatar.svg' %>" class="thumb">
+            <div class="bulletin-body">
+              <a href="/profile/<%= b.author_id %>"><strong><%= b.full_name %></strong></a>
+              <span class="muted small"><%= new Date(b.created_at * 1000).toLocaleString() %></span>
+              <div class="bulletin-subject"><%= b.subject %></div>
+              <div><%= b.body %></div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-side">
+    <div class="box">
+      <div class="box-title">My Friends (<%= friends.length %>)</div>
+      <div class="box-body">
+        <% if (friends.length === 0) { %>
+          <p class="muted small">You don't have any friends yet. <a href="/browse">Browse people</a> to connect!</p>
+        <% } else { %>
+          <div class="friend-grid">
+            <% friends.slice(0, 9).forEach(function(f) { %>
+              <a href="/profile/<%= f.id %>" class="friend-cell">
+                <img src="<%= f.photo_url || '/img/default-avatar.svg' %>">
+                <div class="friend-name"><%= f.full_name %></div>
+              </a>
+            <% }); %>
+          </div>
+          <% if (friends.length > 9) { %><a href="/friends" class="small">View all friends &raquo;</a><% } %>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Quick Links</div>
+      <div class="box-body small">
+        <ul>
+          <li><a href="/browse">Browse Members</a></li>
+          <li><a href="/friends">My Friends</a></li>
+          <li><a href="/profile/<%= user.id %>/edit">Edit My Profile</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

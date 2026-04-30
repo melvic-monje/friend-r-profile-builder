@@ -1,0 +1,19 @@
+<% const pageTitle = 'Login' %>
+<%- include('partials/header') %>
+
+<div class="box centered-box">
+  <div class="box-title">Member Login</div>
+  <div class="box-body">
+    <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+    <form method="post" action="/login">
+      <table class="form-table">
+        <tr><th>Email:</th><td><input type="email" name="email" required autofocus></td></tr>
+        <tr><th>Password:</th><td><input type="password" name="password" required></td></tr>
+        <tr><td></td><td><button type="submit" class="btn btn-primary">Log In</button></td></tr>
+      </table>
+    </form>
+    <p class="muted small">Not a member yet? <a href="/signup">Sign up &mdash; it's free!</a></p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

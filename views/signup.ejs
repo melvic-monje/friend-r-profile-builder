@@ -1,0 +1,30 @@
+<% const pageTitle = 'Sign Up' %>
+<%- include('partials/header') %>
+
+<div class="box centered-box">
+  <div class="box-title">Join Friendster</div>
+  <div class="box-body">
+    <% if (error) { %><div class="error-msg"><%= error %></div><% } %>
+    <form method="post" action="/signup">
+      <table class="form-table">
+        <tr><th>Full Name:</th><td><input type="text" name="full_name" value="<%= values.full_name || '' %>" required></td></tr>
+        <tr><th>Email:</th><td><input type="email" name="email" value="<%= values.email || '' %>" required></td></tr>
+        <tr><th>Password:</th><td><input type="password" name="password" required></td></tr>
+        <tr><th>Gender:</th><td>
+          <select name="gender">
+            <option value="">--</option>
+            <option <%= values.gender === 'Male' ? 'selected' : '' %>>Male</option>
+            <option <%= values.gender === 'Female' ? 'selected' : '' %>>Female</option>
+            <option <%= values.gender === 'Other' ? 'selected' : '' %>>Other</option>
+          </select>
+        </td></tr>
+        <tr><th>Age:</th><td><input type="number" name="age" min="13" max="120" value="<%= values.age || '' %>"></td></tr>
+        <tr><th>Location:</th><td><input type="text" name="location" placeholder="City, Country" value="<%= values.location || '' %>"></td></tr>
+        <tr><td></td><td><button type="submit" class="btn btn-primary">Create My Account</button></td></tr>
+      </table>
+    </form>
+    <p class="muted small">Already a member? <a href="/login">Sign in here</a>.</p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | Friendster' : 'Friendster' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="topbar-row">
+        <a href="/" class="logo">
+          <span class="smiley"><i></i></span>friendster<span class="reg">&reg;</span>
+        </a>
+        <div class="utility-links">
+          <% if (currentUser) { %>
+            <a href="/home">Messages</a>
+            <span class="sep">&middot;</span>
+            <a href="/profile/<%= currentUser.id %>/edit">Settings</a>
+            <span class="sep">&middot;</span>
+            <a href="/">Help</a>
+            <span class="sep">&middot;</span>
+            <form action="/logout" method="post" style="display:inline">
+              <button type="submit" class="linklike">Log Out</button>
+            </form>
+          <% } else { %>
+            <a href="/">Messages</a>
+            <span class="sep">&middot;</span>
+            <a href="/">Settings</a>
+            <span class="sep">&middot;</span>
+            <a href="/">Help</a>
+            <span class="sep">&middot;</span>
+            <a href="/login">Log In</a>
+          <% } %>
+        </div>
+      </div>
+
+      <form class="search-row" method="get" action="/browse">
+        <span class="lbl">Search:</span>
+        <select name="field">
+          <option>Name</option>
+          <option>Email</option>
+          <option>Interests</option>
+        </select>
+        <input type="text" name="q" placeholder="email, first and last name, or first">
+        <button type="submit" class="search-go">&#10148;</button>
+      </form>
+    </div>
+
+    <div class="navbar">
+      <% if (currentUser) { %>
+        <a href="/home">Home</a><span class="sep">|</span>
+        <a href="/profile/<%= currentUser.id %>">Profile</a><span class="sep">|</span>
+        <a href="/friends">Friends</a><span class="sep">|</span>
+        <a href="/browse">Search</a><span class="sep">|</span>
+        <a href="/">Video</a><span class="sep">|</span>
+        <a href="/">Blogs</a><span class="sep">|</span>
+        <a href="/">Love<span class="new">*NEW!</span></a><span class="sep">|</span>
+        <a href="/">Classifieds</a><span class="sep">|</span>
+        <a href="/">Forums</a><span class="sep">|</span>
+        <a href="/">Invite</a>
+      <% } else { %>
+        <a href="/">Home</a><span class="sep">|</span>
+        <a href="/signup">Profile</a><span class="sep">|</span>
+        <a href="/signup">Friends</a><span class="sep">|</span>
+        <a href="/signup">Search</a><span class="sep">|</span>
+        <a href="/">Video</a><span class="sep">|</span>
+        <a href="/">Blogs</a><span class="sep">|</span>
+        <a href="/">Love<span class="new">*NEW!</span></a><span class="sep">|</span>
+        <a href="/">Classifieds</a><span class="sep">|</span>
+        <a href="/">Forums</a><span class="sep">|</span>
+        <a href="/signup">Invite</a>
+      <% } %>
+    </div>
+
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="content">

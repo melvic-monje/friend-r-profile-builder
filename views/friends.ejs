@@ -1,0 +1,24 @@
+<% const pageTitle = 'My Friends' %>
+<%- include('partials/header') %>
+
+<div class="box">
+  <div class="box-title">My Friends (<%= friends.length %>)</div>
+  <div class="box-body">
+    <% if (friends.length === 0) { %>
+      <p class="muted">You don't have any friends yet. <a href="/browse">Browse members</a> to connect!</p>
+    <% } else { %>
+      <div class="member-grid">
+        <% friends.forEach(function(f) { %>
+          <a href="/profile/<%= f.id %>" class="member-card">
+            <img src="<%= f.photo_url || '/img/default-avatar.svg' %>">
+            <div class="member-name"><%= f.full_name %></div>
+            <% if (f.location) { %><div class="muted small"><%= f.location %></div><% } %>
+            <% if (f.tagline) { %><div class="member-tagline">"<%= f.tagline %>"</div><% } %>
+          </a>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

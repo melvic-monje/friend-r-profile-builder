@@ -1,0 +1,359 @@
+<% const pageTitle = user.full_name %>
+<%- include('partials/header') %>
+
+<%
+  const themed = !!(user.theme_bg_url || user.theme_bg_color || user.theme_box_color || user.theme_text_color);
+  const bgColor = user.theme_bg_color || '#1a1a2e';
+  const boxColor = user.theme_box_color || '#1a2238';
+  const textColor = user.theme_text_color || '#e6e9ff';
+  const headingColor = user.theme_heading_color || '#ffcc66';
+  const linkColor = user.theme_link_color || '#9fd0ff';
+  const firstName = user.full_name.split(' ')[0];
+  const photoFilename = user.photo_url
+    ? user.photo_url.split('/').pop().split('?')[0]
+    : 'no-photo.jpg';
+%>
+
+<% if (themed) { %>
+<style>
+  /* Theme covers the FULL viewport (background extends past the page frame) */
+  html, body {
+    background-color: <%= bgColor %> !important;
+    <% if (user.theme_bg_url) { %>background-image: url('<%= user.theme_bg_url %>') !important;<% } %>
+    background-size: cover !important;
+    background-position: center top !important;
+    background-attachment: fixed !important;
+    background-repeat: no-repeat !important;
+  }
+  .page {
+    background-color: transparent !important;
+    border-color: <%= headingColor %>80 !important;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+  }
+  .topbar { background: <%= boxColor %>cc; border-bottom: 1px solid <%= headingColor %>40; }
+  .topbar .logo { color: <%= headingColor %> !important; }
+  .topbar .logo .smiley { border-color: <%= headingColor %>; }
+  .topbar .logo .smiley::before, .topbar .logo .smiley::after { background: <%= headingColor %>; }
+  .topbar .logo .smiley i { border-bottom-color: <%= headingColor %>; }
+  .topbar .logo .reg { color: <%= headingColor %>aa; }
+  .topbar .utility-links a, .topbar .utility-links .linklike,
+  .search-row .lbl { color: <%= linkColor %>; }
+  .search-row select, .search-row input[type="text"] {
+    background: <%= boxColor %>;
+    color: <%= textColor %>;
+    border-color: <%= headingColor %>60;
+  }
+  .navbar {
+    background: <%= boxColor %> !important;
+    border-top: 1px solid <%= headingColor %>40 !important;
+    border-bottom: 1px solid <%= headingColor %>40 !important;
+  }
+  .navbar a { color: <%= headingColor %> !important; }
+  .navbar .sep { color: <%= headingColor %>60 !important; }
+  .footer {
+    background: <%= boxColor %>cc;
+    border-top: 1px solid <%= headingColor %>40;
+    color: <%= textColor %>aa;
+  }
+  .footer a { color: <%= linkColor %>; }
+
+  /* Profile content area */
+  .profile-themed { color: <%= textColor %>; padding: 14px; margin: -14px -20px -20px; min-height: 600px; }
+  .profile-themed a { color: <%= linkColor %>; }
+  .profile-themed .pf-box {
+    background: <%= boxColor %>e0;
+    border: 1px dashed <%= headingColor %>80;
+    color: <%= textColor %>;
+    backdrop-filter: blur(2px);
+    margin-bottom: 10px;
+  }
+  .profile-themed .pf-header {
+    background: <%= boxColor %>;
+    color: <%= headingColor %>;
+    border-bottom: 1px solid <%= headingColor %>40;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .profile-themed .pf-key { color: <%= headingColor %>; }
+  .profile-themed .pf-val { color: <%= textColor %>; }
+  .profile-themed .info-table th { color: <%= headingColor %>; border-bottom-color: <%= headingColor %>30; }
+  .profile-themed .info-table td { border-bottom-color: <%= headingColor %>20; color: <%= textColor %>; }
+  .profile-themed .friend-name { color: <%= headingColor %> !important; background: <%= boxColor %>; }
+  .profile-themed .testimonial p {
+    background: rgba(255,255,255,0.08);
+    border-left-color: <%= headingColor %>;
+    color: <%= textColor %>;
+  }
+  .profile-themed hr { border-color: <%= headingColor %>30; }
+  .profile-themed .muted { color: <%= textColor %>aa; }
+  .profile-themed .badge { background: rgba(120,200,80,0.2); border-color: #8bbf3f; color: #c8e8a0; }
+  .profile-themed .shoutout-box { background: <%= boxColor %>cc; border: 1px dashed <%= headingColor %>80; color: <%= textColor %>; }
+  .profile-themed .shoutout-box strong { color: <%= headingColor %>; }
+  .profile-themed .recent-updates { background: <%= boxColor %>cc; border: 1px dashed <%= headingColor %>80; color: <%= textColor %>; }
+  .profile-themed .action-btn {
+    background: <%= headingColor %>;
+    color: <%= boxColor %> !important;
+    border-color: <%= headingColor %>;
+  }
+  .profile-themed .action-btn:hover { background: <%= linkColor %>; }
+  .profile-themed .album-cover { background: linear-gradient(135deg, <%= boxColor %>, <%= bgColor %>); border-color: <%= headingColor %>80; }
+  .profile-themed .album-title { color: <%= headingColor %>; }
+  .profile-themed .ad-box { background: <%= boxColor %>cc; border-color: <%= headingColor %>40; }
+  .profile-themed .ad-box, .profile-themed .ad-box * { color: <%= textColor %> !important; }
+  .profile-themed .pf-section-head { color: <%= headingColor %>; border-bottom-color: <%= headingColor %>40; }
+  .profile-themed .featured-row a { color: <%= linkColor %>; }
+  .profile-themed .more-link { color: <%= linkColor %>; }
+</style>
+<% } %>
+
+<div class="<%= themed ? 'profile-themed' : '' %>">
+
+<div class="profile-3col">
+
+  <!-- LEFT: Profile Theme + actions -->
+  <div class="pf-col-left">
+    <div class="pf-box">
+      <div class="pf-header">Profile Theme<span style="font-weight:normal;"> &mdash;</span></div>
+      <div style="padding:10px;">
+        <div class="pf-photo-frame">
+          <img src="<%= user.photo_url || '/img/default-avatar.svg' %>" class="pf-photo">
+        </div>
+        <div class="pf-photo-name"><%= photoFilename %></div>
+
+        <div class="action-grid">
+          <a href="/home" class="action-btn">View Messages</a>
+          <a href="/home" class="action-btn">Edit Blog</a>
+          <a href="/friends" class="action-btn">Edit Friends</a>
+          <a href="/home" class="action-btn">Edit Comments</a>
+          <% if (isOwn) { %>
+            <a href="/profile/<%= user.id %>/edit" class="action-btn">Customize Page</a>
+            <a href="/profile/<%= user.id %>/edit" class="action-btn">Edit Profile</a>
+            <a href="/profile/<%= user.id %>/edit" class="action-btn action-btn-wide">Edit Photos</a>
+          <% } else if (status && status.state === 'none') { %>
+            <form method="post" action="/friends/request/<%= user.id %>" class="action-form-wide">
+              <button type="submit" class="action-btn action-btn-wide">Add as Friend</button>
+            </form>
+          <% } else if (status && status.state === 'sent') { %>
+            <span class="action-btn action-btn-wide" style="opacity:.6;">Request Sent</span>
+          <% } else if (status && status.state === 'received') { %>
+            <form method="post" action="/friends/accept/<%= status.row.id %>" class="action-form-wide">
+              <button type="submit" class="action-btn action-btn-wide">Accept Request</button>
+            </form>
+          <% } else if (status && status.state === 'friends') { %>
+            <span class="action-btn action-btn-wide" style="background:#cce8b5;border-color:#7eb04a;color:#3d6010;">&#10003; Friends</span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE: shoutout + meta + recent updates -->
+  <div class="pf-col-mid">
+    <div class="shoutout-box">
+      <strong>Post a shoutout to your profile!</strong>
+      <% if (isOwn) { %>
+        (<a href="/home">Create</a>)
+      <% } else { %>
+        <span class="muted">(only <%= firstName %> can post here)</span>
+      <% } %>
+    </div>
+
+    <div class="member-meta">
+      <div class="meta-line">
+        <span class="pf-key"><%= user.gender || '—' %><%= user.age ? ', ' + user.age : '' %><%= user.relationship_status ? ', ' + user.relationship_status : '' %></span>
+      </div>
+      <div class="meta-line"><span class="pf-key">Interested In:</span> <span class="pf-val">Friends</span></div>
+      <div class="meta-line"><span class="pf-key">Member Since:</span> <span class="pf-val"><%= new Date(user.created_at * 1000).toLocaleDateString('en-US', { month:'short', year:'numeric' }) %></span></div>
+      <div class="meta-line"><span class="pf-key">Profile Viewed:</span> <span class="pf-val"><%= 1 + ((user.id * 137) % 4000) %> times</span></div>
+      <% if (user.location) { %><div class="meta-line"><span class="pf-key">Location:</span> <span class="pf-val"><%= user.location %></span></div><% } %>
+      <% if (user.occupation) { %><div class="meta-line"><span class="pf-key">Occupation:</span> <span class="pf-val"><%= user.occupation %></span></div><% } %>
+      <div class="meta-line"><span class="pf-key">Your URL <% if (isOwn) { %>[<a href="/profile/<%= user.id %>/edit">Edit</a>]<% } %>:</span></div>
+      <div class="meta-line" style="padding-left:8px;"><span class="pf-val small">http://profiles.friendster.com/<%= user.id %></span></div>
+
+      <div style="margin-top:8px;"><a href="#about" class="more-link">&raquo; More about <%= firstName %></a></div>
+    </div>
+
+    <div class="recent-updates">
+      <div class="ru-header"><span class="pf-key">Recent Updates:</span> <span class="muted small">[visible to all]</span></div>
+      <% if (bulletins && bulletins.length > 0) { %>
+        <% bulletins.slice(0, 3).forEach(function(b) { %>
+          <div class="ru-item">
+            <strong><%= b.subject %></strong>
+            <span class="muted small">&middot; <%= new Date(b.created_at * 1000).toLocaleDateString() %></span>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="muted small" style="padding:4px 0;">No recent updates.</div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- RIGHT: friends + groups + ad -->
+  <div class="pf-col-right">
+    <div class="pf-section-head"><%= firstName %>'s Friends</div>
+    <% if (friends.length === 0) { %>
+      <div class="muted small" style="padding:8px;">No friends yet.</div>
+    <% } else { %>
+      <div class="friend-strip">
+        <% friends.slice(0, 6).forEach(function(f) { %>
+          <a href="/profile/<%= f.id %>" class="friend-strip-cell">
+            <img src="<%= f.photo_url || '/img/default-avatar.svg' %>">
+            <div class="friend-name"><%= f.full_name.split(' ')[0] %></div>
+          </a>
+        <% }); %>
+      </div>
+      <div class="featured-row">
+        <a href="/friends">View All (<%= friendCount %>)</a>
+        <% if (isOwn) { %><a href="/friends" class="right-link">Edit Featured Friends</a><% } %>
+      </div>
+    <% } %>
+
+    <div class="pf-section-head" style="margin-top:14px;"><%= firstName %>'s Groups</div>
+    <div class="ad-box" style="font-size:11px;">
+      <strong style="color:#cc3300;">Music Lovers United</strong>
+      <div class="muted small">22 members &middot; Public group</div>
+      <div class="muted small" style="margin-top:4px;">Last post: Tuesday, February 5, 2008</div>
+    </div>
+    <div class="featured-row">
+      <a href="#">View All (1)</a>
+      <% if (isOwn) { %><a href="#" class="right-link">Edit</a><% } %>
+    </div>
+
+    <div class="ad-box">
+      <div class="muted small" style="text-align:center; margin-bottom:4px;">Sponsored</div>
+      <div style="font-weight:bold; color:#cc3300; font-size:13px; text-align:center;">Designer Bags 80% OFF</div>
+      <div style="text-align:center; margin:4px 0;">
+        <span style="text-decoration:line-through; color:#888;">$229</span>
+        <span style="color:#cc3300; font-weight:bold; font-size:14px; margin-left:6px;">$148</span>
+      </div>
+      <div class="muted small" style="text-align:center;">click to learn more</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- "I'm currently listening to..." (with embedded autoplay audio player) -->
+<% if (user.profile_song_url || user.profile_song_title || user.favorite_music) { %>
+<div class="pf-box" style="margin-top:14px;">
+  <div class="pf-header">I'm currently listening to&hellip;</div>
+  <div style="padding:12px; display:flex; gap:14px;">
+    <div class="album-cover">
+      <div class="album-cover-inner">&#9836;</div>
+    </div>
+    <div style="flex:1; min-width:0;">
+      <div class="album-title"><strong><%= user.profile_song_title || 'Untitled track' %></strong></div>
+      <% if (user.profile_song_url) { %>
+        <audio controls autoplay loop data-profile-song src="<%= user.profile_song_url %>" style="width:100%; margin-top:6px;"></audio>
+      <% } %>
+      <% if (user.favorite_music) { %>
+        <div class="muted small" style="margin-top:8px;"><strong>Also into:</strong></div>
+        <div style="font-size:11px; line-height:1.5;"><%= user.favorite_music %></div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Photo Albums -->
+<div class="pf-box" style="margin-top:14px;">
+  <div class="pf-header"><%= firstName %>'s Photo Albums</div>
+  <div style="padding:12px;">
+    <div class="album-grid">
+      <div class="album-tile">
+        <div class="album-cover album-cover-photo">
+          <img src="<%= user.photo_url || '/img/default-avatar.svg' %>">
+        </div>
+        <div class="album-title">Profile Photo</div>
+        <div class="muted small">1 photo &middot; Public</div>
+      </div>
+      <div class="album-tile">
+        <div class="album-cover album-cover-empty"></div>
+        <div class="album-title muted">Vacation '08</div>
+        <div class="muted small">0 photos &middot; Public</div>
+      </div>
+    </div>
+    <div class="featured-row" style="margin-top:8px;">
+      <a href="#">View All Albums (2)</a>
+      <% if (isOwn) { %><a href="/profile/<%= user.id %>/edit" class="right-link">Who's Grabbed My Photos</a><% } %>
+    </div>
+  </div>
+</div>
+
+<!-- About + Testimonials -->
+<div class="pf-box" id="about" style="margin-top:14px;">
+  <div class="pf-header">About <%= firstName %><% if (user.tagline) { %> &mdash; "<em><%= user.tagline %></em>"<% } %></div>
+  <div style="padding:12px;">
+    <% if (user.about_me) { %>
+      <p style="white-space:pre-wrap;"><%= user.about_me %></p>
+    <% } else { %>
+      <p class="muted"><%= isOwn ? "Tell people about yourself! Click 'Edit Profile' on the left." : "This user hasn't written an about-me yet." %></p>
+    <% } %>
+
+    <table class="info-table">
+      <% if (user.who_id_like_to_meet) { %><tr><th>Who I'd like to meet:</th><td style="white-space:pre-wrap;"><%= user.who_id_like_to_meet %></td></tr><% } %>
+      <% if (user.interests) { %><tr><th>Interests:</th><td><%= user.interests %></td></tr><% } %>
+      <% if (user.favorite_music) { %><tr><th>Music:</th><td><%= user.favorite_music %></td></tr><% } %>
+      <% if (user.favorite_movies) { %><tr><th>Movies:</th><td><%= user.favorite_movies %></td></tr><% } %>
+      <% if (user.favorite_books) { %><tr><th>Books:</th><td><%= user.favorite_books %></td></tr><% } %>
+    </table>
+  </div>
+</div>
+
+<div class="pf-box" id="post-bulletin" style="margin-top:14px;">
+  <div class="pf-header">Testimonials &amp; Comments for <%= firstName %> (<%= testimonials.length %>)</div>
+  <div style="padding:12px;">
+    <% if (testimonials.length === 0) { %>
+      <p class="muted">No testimonials yet.</p>
+    <% } %>
+    <% testimonials.forEach(function(t) { %>
+      <div class="testimonial">
+        <img src="<%= t.author_photo || '/img/default-avatar.svg' %>" class="thumb">
+        <div class="testimonial-body">
+          <a href="/profile/<%= t.author_id %>"><strong><%= t.author_name %></strong></a>
+          <span class="muted small"><%= new Date(t.created_at * 1000).toLocaleDateString() %></span>
+          <p><%= t.body %></p>
+        </div>
+      </div>
+    <% }); %>
+
+    <% if (!isOwn && status && status.state === 'friends') { %>
+      <hr>
+      <h4>Post a Comment</h4>
+      <form method="post" action="/testimonials/<%= user.id %>">
+        <textarea name="body" rows="3" placeholder="Say something nice about <%= firstName %>..." required style="width:100%"></textarea>
+        <div style="margin-top:6px;"><button class="btn btn-primary btn-sm">Submit</button></div>
+        <p class="muted small">It will appear after <%= firstName %> approves it.</p>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function () {
+  var audio = document.querySelector('audio[data-profile-song]');
+  if (!audio) return;
+  var attempt = audio.play();
+  if (attempt && typeof attempt.catch === 'function') {
+    attempt.catch(function () {
+      // Browser blocked autoplay — start on first user gesture anywhere on the page
+      var unlock = function () {
+        audio.play().catch(function () {});
+        document.removeEventListener('click', unlock, true);
+        document.removeEventListener('keydown', unlock, true);
+        document.removeEventListener('touchstart', unlock, true);
+        document.removeEventListener('mousemove', unlock, true);
+      };
+      document.addEventListener('click', unlock, true);
+      document.addEventListener('keydown', unlock, true);
+      document.addEventListener('touchstart', unlock, true);
+      document.addEventListener('mousemove', unlock, true);
+    });
+  }
+})();
+</script>
+
+<%- include('partials/footer') %>

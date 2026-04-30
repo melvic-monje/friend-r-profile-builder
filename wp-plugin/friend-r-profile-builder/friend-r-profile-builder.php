@@ -1,0 +1,167 @@
+<?php
+/**
+ * Plugin Name:       friend_r Profile Builder
+ * Plugin URI:        https://vcfyit.com
+ * Description:       Drop a [friend_r_builder] shortcode into any page to embed a retro profile builder. A fan-made nostalgia tribute by VCFY I.T. Solutions.
+ * Version:           1.0.0
+ * Requires at least: 5.5
+ * Requires PHP:      7.2
+ * Author:            VCFY I.T. Solutions
+ * Author URI:        https://vcfyit.com
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       friend-r-profile-builder
+ *
+ * Disclaimer: Fan-made recreation for entertainment only. Not affiliated with,
+ * endorsed by, or sponsored by the Friendster brand. Friendster® and related
+ * marks are property of their respective owners.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Block direct access.
+}
+
+define( 'FRPB_VERSION', '1.0.0' );
+define( 'FRPB_FILE',    __FILE__ );
+define( 'FRPB_DIR',     plugin_dir_path( __FILE__ ) );
+define( 'FRPB_URL',     plugin_dir_url( __FILE__ ) );
+
+/**
+ * Register the [friend_r_builder] shortcode.
+ *
+ * Usage in any post/page:
+ *   [friend_r_builder]
+ *   [friend_r_builder height="900"]   <!-- height of the embed area in pixels -->
+ */
+function frpb_shortcode( $atts ) {
+	$atts = shortcode_atts(
+		array(
+			'height' => '900',
+		),
+		$atts,
+		'friend_r_builder'
+	);
+
+	// Each instance gets its own ID so multiple shortcodes on a page don't clash.
+	static $instance = 0;
+	$instance++;
+	$dom_id = 'frpb-' . $instance;
+
+	// Capture the markup. The actual builder HTML lives in templates/builder.php.
+	ob_start();
+	?>
+	<div id="<?php echo esc_attr( $dom_id ); ?>" class="frpb-shell" style="min-height: <?php echo intval( $atts['height'] ); ?>px;">
+		<?php include FRPB_DIR . 'templates/builder.php'; ?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'friend_r_builder', 'frpb_shortcode' );
+
+/**
+ * Enqueue CSS + JS only on pages that actually use the shortcode.
+ * Avoids loading 30KB of JS on every WP page.
+ */
+function frpb_enqueue_assets() {
+	if ( ! is_singular() ) {
+		return;
+	}
+	$post = get_post();
+	if ( ! $post || ! has_shortcode( $post->post_content, 'friend_r_builder' ) ) {
+		return;
+	}
+
+	wp_enqueue_style(
+		'frpb-style',
+		FRPB_URL . 'assets/style.css',
+		array(),
+		FRPB_VERSION
+	);
+
+	wp_enqueue_script(
+		'html2canvas',
+		'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+		array(),
+		'1.4.1',
+		true
+	);
+
+	wp_enqueue_script(
+		'frpb-app',
+		FRPB_URL . 'assets/app.js',
+		array( 'html2canvas' ),
+		FRPB_VERSION,
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'frpb_enqueue_assets' );
+
+/**
+ * Add a "Settings" link on the WP plugin list row.
+ */
+function frpb_plugin_action_links( $links ) {
+	$docs_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=frpb' ) ) . '">' . esc_html__( 'How to use', 'friend-r-profile-builder' ) . '</a>';
+	array_unshift( $links, $docs_link );
+	return $links;
+}
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'frpb_plugin_action_links' );
+
+/**
+ * Tiny admin page explaining how to use the plugin.
+ */
+function frpb_register_admin_page() {
+	add_options_page(
+		'friend_r Profile Builder',
+		'friend_r Builder',
+		'manage_options',
+		'frpb',
+		'frpb_render_admin_page'
+	);
+}
+add_action( 'admin_menu', 'frpb_register_admin_page' );
+
+function frpb_render_admin_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<div class="wrap">
+		<h1>friend_r Profile Builder</h1>
+		<p>A fan-made nostalgia tribute by <a href="https://vcfyit.com" target="_blank">VCFY I.T. Solutions</a>.</p>
+
+		<h2>How to use</h2>
+		<ol>
+			<li>Create a new page (e.g. <em>Build Your Profile</em>).</li>
+			<li>Add a <strong>Shortcode</strong> block (or use the Custom HTML / classic editor).</li>
+			<li>Paste this:
+				<pre style="background:#f5f5f5;padding:10px;border:1px solid #ddd;">[friend_r_builder]</pre>
+			</li>
+			<li>Publish the page. Visit it. Build a profile. Share the link or screenshot.</li>
+		</ol>
+
+		<h2>Optional shortcode parameters</h2>
+		<table class="widefat striped" style="max-width:600px;">
+			<thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+			<tbody>
+				<tr>
+					<td><code>height</code></td>
+					<td><code>900</code></td>
+					<td>Minimum height of the embed area, in pixels.</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h2>Sharing</h2>
+		<p>
+			When a visitor builds a profile, the URL gets a <code>#p=...</code> hash containing their full profile data
+			(URL-safe base64). Anyone visiting that URL sees their profile in full-page view-mode &mdash; no signup, no backend.
+		</p>
+
+		<h2>Disclaimer</h2>
+		<p>
+			This plugin is a fan-made recreation for entertainment only. It is not affiliated with, endorsed by, or sponsored
+			by the Friendster brand. Friendster&reg; and related marks are property of their respective owners.
+		</p>
+	</div>
+	<?php
+}

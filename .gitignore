@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Local SQLite (legacy Express prototype)
+*.db
+*.db-shm
+*.db-wal
+
+# Build artifacts (regenerated on release)
+wp-plugin/*.zip
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Local uploads from the legacy Express prototype
+public/uploads/photos/*
+public/uploads/bg/*
+public/uploads/audio/*
+!public/uploads/photos/.gitkeep
+!public/uploads/bg/.gitkeep
+!public/uploads/audio/.gitkeep
+
+# Generated audio (legacy)
+public/audio/claude-theme.wav
+public/audio/ezra-theme.wav
+
+# Anthropic memory directory
+memory/

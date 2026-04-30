@@ -1,0 +1,97 @@
+<% const pageTitle = 'Edit Profile' %>
+<%- include('partials/header') %>
+
+<div class="box">
+  <div class="box-title">Edit Profile</div>
+  <div class="box-body">
+    <form method="post" action="/profile/<%= user.id %>/edit" enctype="multipart/form-data">
+
+      <h3 style="color:#cc3300; margin-top:0;">Photo &amp; Basics</h3>
+      <table class="form-table">
+        <tr><th>Profile Photo:</th><td>
+          <% if (user.photo_url) { %>
+            <div style="margin-bottom:6px;"><img src="<%= user.photo_url %>" style="width:80px;height:80px;object-fit:cover;border:1px solid #999;"></div>
+          <% } %>
+          <input type="file" name="photo_file" accept="image/*">
+          <div class="muted small">Upload a new image (JPG/PNG/GIF, max 10MB), or paste a URL below.</div>
+          <input type="url" name="photo_url" value="<%= user.photo_url && !user.photo_url.startsWith('/uploads/') ? user.photo_url : '' %>" placeholder="https://..." style="margin-top:4px;">
+        </td></tr>
+        <tr><th>Full Name:</th><td><input type="text" name="full_name" value="<%= user.full_name || '' %>" required></td></tr>
+        <tr><th>Tagline:</th><td><input type="text" name="tagline" maxlength="120" value="<%= user.tagline || '' %>" placeholder="A short quote that describes you"></td></tr>
+        <tr><th>Gender:</th><td>
+          <select name="gender">
+            <option value="">--</option>
+            <% ['Male','Female','Other'].forEach(function(g) { %>
+              <option <%= user.gender === g ? 'selected' : '' %>><%= g %></option>
+            <% }); %>
+          </select>
+        </td></tr>
+        <tr><th>Age:</th><td><input type="number" name="age" min="13" max="120" value="<%= user.age || '' %>"></td></tr>
+        <tr><th>Location:</th><td><input type="text" name="location" value="<%= user.location || '' %>"></td></tr>
+        <tr><th>Occupation:</th><td><input type="text" name="occupation" value="<%= user.occupation || '' %>"></td></tr>
+        <tr><th>Relationship:</th><td>
+          <select name="relationship_status">
+            <option value="">--</option>
+            <% ['Single','In a relationship','Married','It\'s complicated'].forEach(function(s) { %>
+              <option <%= user.relationship_status === s ? 'selected' : '' %>><%= s %></option>
+            <% }); %>
+          </select>
+        </td></tr>
+        <tr><th>Interests:</th><td><textarea name="interests" rows="2"><%= user.interests || '' %></textarea></td></tr>
+        <tr><th>Favorite Music:</th><td><textarea name="favorite_music" rows="2"><%= user.favorite_music || '' %></textarea></td></tr>
+        <tr><th>Favorite Movies:</th><td><textarea name="favorite_movies" rows="2"><%= user.favorite_movies || '' %></textarea></td></tr>
+        <tr><th>Favorite Books:</th><td><textarea name="favorite_books" rows="2"><%= user.favorite_books || '' %></textarea></td></tr>
+        <tr><th>About Me:</th><td><textarea name="about_me" rows="4"><%= user.about_me || '' %></textarea></td></tr>
+        <tr><th>Who I'd like to meet:</th><td><textarea name="who_id_like_to_meet" rows="2"><%= user.who_id_like_to_meet || '' %></textarea></td></tr>
+      </table>
+
+      <h3 style="color:#cc3300;">Profile Song <span class="muted small" style="font-weight:normal">(plays on your profile)</span></h3>
+      <table class="form-table">
+        <tr><th>Song Title:</th><td><input type="text" name="profile_song_title" value="<%= user.profile_song_title || '' %>" placeholder="e.g. An Ending (Ascent) — Brian Eno"></td></tr>
+        <tr><th>Upload Song:</th><td>
+          <% if (user.profile_song_url) { %>
+            <audio controls src="<%= user.profile_song_url %>" style="width:280px; margin-bottom:6px;"></audio><br>
+          <% } %>
+          <input type="file" name="song_file" accept="audio/*">
+          <div class="muted small">MP3/WAV/OGG, max 10MB. Or paste a URL:</div>
+          <input type="url" name="profile_song_url" value="<%= user.profile_song_url && !user.profile_song_url.startsWith('/uploads/') ? user.profile_song_url : '' %>" placeholder="https://..." style="margin-top:4px;">
+        </td></tr>
+      </table>
+
+      <h3 style="color:#cc3300;">Customize My Page</h3>
+      <table class="form-table">
+        <tr><th>Background Image:</th><td>
+          <% if (user.theme_bg_url) { %>
+            <div style="margin-bottom:6px;"><img src="<%= user.theme_bg_url %>" style="width:120px;height:80px;object-fit:cover;border:1px solid #999;"></div>
+          <% } %>
+          <input type="file" name="bg_file" accept="image/*">
+          <div class="muted small">Or paste a URL:</div>
+          <input type="url" name="theme_bg_url" value="<%= user.theme_bg_url && !user.theme_bg_url.startsWith('/uploads/') ? user.theme_bg_url : '' %>" placeholder="https://..." style="margin-top:4px;">
+        </td></tr>
+        <tr><th>Background Color:</th><td>
+          <input type="color" name="theme_bg_color" value="<%= user.theme_bg_color || '#1a1a2e' %>" style="width:60px;">
+          <span class="muted small">(used as fallback / behind transparent boxes)</span>
+        </td></tr>
+        <tr><th>Box Color:</th><td>
+          <input type="color" name="theme_box_color" value="<%= user.theme_box_color || '#1a2238' %>" style="width:60px;">
+          <span class="muted small">(profile section backgrounds)</span>
+        </td></tr>
+        <tr><th>Text Color:</th><td>
+          <input type="color" name="theme_text_color" value="<%= user.theme_text_color || '#e6e9ff' %>" style="width:60px;">
+        </td></tr>
+        <tr><th>Heading Color:</th><td>
+          <input type="color" name="theme_heading_color" value="<%= user.theme_heading_color || '#ffcc66' %>" style="width:60px;">
+        </td></tr>
+        <tr><th>Link Color:</th><td>
+          <input type="color" name="theme_link_color" value="<%= user.theme_link_color || '#9fd0ff' %>" style="width:60px;">
+        </td></tr>
+        <tr><td></td><td>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <a href="/profile/<%= user.id %>" class="btn">Cancel</a>
+        </td></tr>
+      </table>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

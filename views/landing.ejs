@@ -1,0 +1,129 @@
+<% const pageTitle = 'Welcome' %>
+<%- include('partials/header') %>
+
+<div class="hero">
+  <div class="hero-grid">
+    <div class="hero-item">
+      <div class="hero-icon">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5a6f8a" stroke-width="1.4">
+          <circle cx="10" cy="10" r="6"/>
+          <path d="M14.5 14.5 L20 20" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Find</h3>
+      <p>Search for old friends,<br>classmates or anyone</p>
+    </div>
+    <div class="hero-item">
+      <div class="hero-icon">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5a6f8a" stroke-width="1.4">
+          <circle cx="8" cy="8" r="3"/>
+          <path d="M3 16 q0 -4 5 -4 q5 0 5 4"/>
+          <circle cx="16" cy="9" r="2.5"/>
+          <path d="M12 17 q0 -3 4 -3 q4 0 4 3"/>
+        </svg>
+      </div>
+      <h3>Connect</h3>
+      <p>View profiles,<br>grow your network</p>
+    </div>
+    <div class="hero-item">
+      <div class="hero-icon">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#5a6f8a" stroke-width="1.4">
+          <rect x="5" y="4" width="14" height="17" rx="1"/>
+          <line x1="8" y1="9" x2="16" y2="9"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="13" y2="17"/>
+        </svg>
+      </div>
+      <h3>Stay in Touch</h3>
+      <p>Get friend updates,<br>share photos and videos</p>
+    </div>
+  </div>
+</div>
+
+<div class="landing-two-col">
+  <div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 class="section-title">Photos</h2>
+      </div>
+      <div class="tabs">
+        <div class="tab active">Latest</div>
+        <div class="tab">Featured Photos</div>
+        <div class="tab">Most Grabbed</div>
+        <div class="tab">Most Discussed</div>
+      </div>
+      <div class="tile-row">
+        <% recent.forEach(function(u) { %>
+          <a href="/login" class="tile">
+            <img src="<%= u.photo_url || '/img/default-avatar.svg' %>">
+            <div class="name"><%= u.full_name.split(' ')[0] %></div>
+            <div class="meta">Posted <%= new Date(u.created_at * 1000).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) %></div>
+          </a>
+        <% }); %>
+      </div>
+      <div class="row-more"><a href="/login">More Latest Photos &raquo;</a></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2 class="section-title">People</h2>
+        <div class="section-meta">Sponsored by <strong style="color:#2a6db0;">True</strong></div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">New Members</div>
+        <div class="tab">Popular</div>
+      </div>
+      <div class="tile-row">
+        <% featured.forEach(function(u) { %>
+          <a href="/login" class="tile">
+            <img src="<%= u.photo_url || '/img/default-avatar.svg' %>">
+            <div class="name"><%= u.full_name.split(' ')[0] %></div>
+            <div class="meta">
+              <% if (u.age) { %><%= u.age %><% } %><% if (u.age && u.relationship_status) { %>, <% } %><% if (u.relationship_status) { %><%= u.relationship_status %><% } %>
+              <% if (u.location) { %><br><%= u.location %><% } %>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+      <div class="row-more">
+        Looking for Love? <span class="muted small">*NEW!</span> &middot; <a href="/login">More New Members &raquo;</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div>
+    <div class="sidebox teal">
+      <div class="sidebox-body">
+        <h2>Sign in</h2>
+        <form method="post" action="/login">
+          <div class="form-row"><label>Email:</label><input type="email" name="email" required></div>
+          <div class="form-row"><label>Password:</label><input type="password" name="password" required></div>
+          <div class="form-row">
+            <label style="font-weight:normal;"><input type="checkbox"> Remember me</label>
+          </div>
+          <div style="color:#cc3300; font-size:11px; margin-bottom:8px;"><a href="/login" style="color:#cc3300;">Forgot password?</a></div>
+          <button type="submit" class="btn-signin">Sign In</button>
+        </form>
+        <div class="signup-prompt">
+          New to Friendster? <a href="/signup">Sign Up Now!</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebox cream">
+      <div class="sidebox-body">
+        <h2><span class="icon">&#128270;</span>See Who's On Friendster</h2>
+        <div style="font-size:11px; margin: 4px 0 8px;">Search over <strong><%= (totalUsers * 5500000).toLocaleString() %></strong> profiles</div>
+        <form method="get" action="/browse">
+          <label>Enter name or email:</label>
+          <input type="text" name="q" placeholder="">
+          <button type="submit" class="btn-search-mini">search</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
