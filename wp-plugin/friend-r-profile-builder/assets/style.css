@@ -821,18 +821,14 @@ body.view-mode .builder-layout {  grid-template-columns: 1fr;  }
 
 body.view-mode .builder-preview {  max-height: 100vh;  }
 
-body.view-mode #view-mode-btn {  display: none;  }
-
 body.view-mode .floating-edit-btn {  display: inline-flex;  }
 
 
 body:not(.view-mode) .floating-edit-btn {  display: none;  }
 
-body:not(.view-mode) #view-mode-btn {  display: none;  }
- /* hidden by default; only shows after share URL is generated, optional */
 
-/* ============ Floating view/edit buttons ============ */
-.frpb-shell .floating-view-btn, .frpb-shell .floating-edit-btn { 
+/* ============ Floating "Edit / Make Your Own" link (view-mode only) ============ */
+.frpb-shell .floating-edit-btn { 
   position: fixed;
   top: 16px; right: 16px;
   background: #fff;
@@ -848,7 +844,7 @@ body:not(.view-mode) #view-mode-btn {  display: none;  }
   z-index: 50;
  }
 
-.frpb-shell .floating-view-btn:hover, .frpb-shell .floating-edit-btn:hover {  background: #fef0ea;  }
+.frpb-shell .floating-edit-btn:hover {  background: #fef0ea;  }
 
 
 /* ============ Share modal ============ */

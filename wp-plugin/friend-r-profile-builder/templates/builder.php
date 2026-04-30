@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     </div>
     <div class="builder-actions">
       <button id="reset-btn" class="btn btn-ghost" type="button">Reset</button>
+      <button id="view-mode-btn" class="btn" type="button">Preview &raquo;</button>
       <button id="share-btn" class="btn btn-primary" type="button">&#128247; Share Screenshot</button>
     </div>
   </header>
@@ -179,7 +180,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
   </div>
 </div>
 
-<button id="view-mode-btn" class="floating-view-btn" type="button">View Profile &raquo;</button>
 <a id="edit-mode-btn" href="?" class="floating-edit-btn">&laquo; Edit / Make Your Own</a>
 
 <div id="intro-modal" class="intro-modal" hidden>

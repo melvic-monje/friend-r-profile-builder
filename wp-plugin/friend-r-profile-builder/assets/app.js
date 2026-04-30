@@ -871,10 +871,6 @@
     if (hashState) {
       state = { ...defaultState, ...hashState };
       document.body.classList.add('view-mode');
-    } else {
-      // builder mode: show "View Profile »" button
-      const v = $('#view-mode-btn');
-      if (v) v.style.display = 'inline-block';
     }
     hydrateForm();
     render();
