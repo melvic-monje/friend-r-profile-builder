@@ -1119,9 +1119,16 @@
       return;
     }
 
-    // 4. Builder mode + backend configured → show email gate if no lead captured yet
-    if (HAS_BACKEND && !loadLead()) {
-      showEmailGate();
+    // 4. Builder mode + backend configured → handle email gate
+    if (HAS_BACKEND) {
+      // If WP gave us an auto-lead (logged-in user), adopt it silently — no gate
+      if (CFG.autoLeadId && !loadLead()) {
+        saveLead({ leadId: CFG.autoLeadId, email: CFG.autoLeadEmail || '', opt_in: 0, autoFromWp: true });
+      }
+      // Show gate only if we still have no lead
+      if (!loadLead()) {
+        showEmailGate();
+      }
     }
 
     // Esc to close share modal

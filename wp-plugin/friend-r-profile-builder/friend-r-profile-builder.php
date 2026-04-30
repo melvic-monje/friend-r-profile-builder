@@ -3,7 +3,7 @@
  * Plugin Name:       friend_r Profile Builder
  * Plugin URI:        https://vcfyit.com
  * Description:       Drop a [friend_r_builder] shortcode into any page to embed a retro profile builder. A fan-made nostalgia tribute by VCFY I.T. Solutions.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 5.5
  * Requires PHP:      7.2
  * Author:            VCFY I.T. Solutions
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Block direct access.
 }
 
-define( 'FRPB_VERSION', '1.0.3' );
+define( 'FRPB_VERSION', '1.0.4' );
 define( 'FRPB_FILE',    __FILE__ );
 define( 'FRPB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'FRPB_URL',     plugin_dir_url( __FILE__ ) );
@@ -122,7 +122,32 @@ function frpb_enqueue_assets() {
 		true
 	);
 
-	// Pass REST URL, nonce, Cloudinary config, current page URL to the JS bundle.
+	// If user is logged into WP, auto-create/find their lead row so the email
+	// gate is skipped (they don't need to give us an email — we already have it).
+	$auto_lead_id    = 0;
+	$auto_lead_email = '';
+	if ( is_user_logged_in() ) {
+		$cu = wp_get_current_user();
+		if ( $cu && $cu->user_email ) {
+			global $wpdb;
+			$tbl = frpb_table_name();
+			$row = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM $tbl WHERE email = %s ORDER BY id DESC LIMIT 1", $cu->user_email ) );
+			if ( $row ) {
+				$auto_lead_id = (int) $row->id;
+			} else {
+				$wpdb->insert( $tbl, array(
+					'email'      => $cu->user_email,
+					'opt_in'     => 0,
+					'created_at' => current_time( 'mysql' ),
+					'updated_at' => current_time( 'mysql' ),
+				) );
+				$auto_lead_id = (int) $wpdb->insert_id;
+			}
+			$auto_lead_email = $cu->user_email;
+		}
+	}
+
+	// Pass REST URL, nonce, Cloudinary config, current page URL, auto-lead to the JS bundle.
 	wp_localize_script( 'frpb-app', 'FRPB_CFG', array(
 		'restUrl'          => esc_url_raw( rest_url( 'frpb/v1/' ) ),
 		'nonce'            => wp_create_nonce( 'frpb_rest' ),
@@ -130,6 +155,8 @@ function frpb_enqueue_assets() {
 		'cloudinaryCloud'  => defined( 'FRPB_CLOUDINARY_CLOUD_NAME' ) ? FRPB_CLOUDINARY_CLOUD_NAME : '',
 		'cloudinaryPreset' => defined( 'FRPB_CLOUDINARY_UPLOAD_PRESET' ) ? FRPB_CLOUDINARY_UPLOAD_PRESET : '',
 		'isLoggedIn'       => is_user_logged_in(),
+		'autoLeadId'       => $auto_lead_id,
+		'autoLeadEmail'    => $auto_lead_email,
 	) );
 }
 add_action( 'wp_enqueue_scripts', 'frpb_enqueue_assets' );
