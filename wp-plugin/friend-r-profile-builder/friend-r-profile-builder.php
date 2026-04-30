@@ -27,6 +27,24 @@ define( 'FRPB_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'FRPB_URL',     plugin_dir_url( __FILE__ ) );
 
 /**
+ * GitHub repo for auto-updates ("owner/repo" — no leading slash, no full URL).
+ *
+ * 👉 EDIT THIS to match your GitHub repository, then commit + cut a release.
+ *    Once installed, the plugin will check this repo's "latest" release on a
+ *    12h cache and surface updates inside WP admin → Plugins → Updates.
+ */
+define( 'FRPB_GITHUB_REPO', 'YOUR_GITHUB_USERNAME/friend-r-profile-builder' );
+
+require_once FRPB_DIR . 'includes/github-updater.php';
+
+add_action( 'admin_init', function () {
+	// Only run inside admin to avoid hitting the GitHub API on public page loads.
+	if ( defined( 'FRPB_GITHUB_REPO' ) && FRPB_GITHUB_REPO && strpos( FRPB_GITHUB_REPO, 'YOUR_GITHUB_USERNAME' ) === false ) {
+		new FRPB_GitHub_Updater( FRPB_FILE, FRPB_GITHUB_REPO );
+	}
+} );
+
+/**
  * Register the [friend_r_builder] shortcode.
  *
  * Usage in any post/page:

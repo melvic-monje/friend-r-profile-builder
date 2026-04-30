@@ -67,11 +67,29 @@ git push origin v1.0.0
 
 The workflow runs `node wp-plugin/scope-css.js`, copies `static/app.js`, zips the plugin folder, and attaches `friend-r-profile-builder.zip` to the GitHub release. Users install with **Plugins → Add New → Upload Plugin**.
 
-## Updating an installed plugin
+## Auto-update from GitHub Releases
 
-Two options:
-- **Manual**: download the new zip from GitHub Releases, deactivate + delete the old plugin in WP admin, upload the new zip, reactivate
-- **Plugin Update Checker**: there's a popular library ([YahnisElsts/plugin-update-checker](https://github.com/YahnisElsts/plugin-update-checker)) that lets you point your plugin at a GitHub repo and serve updates through the WP admin's normal update flow. We can wire this in if you want one-click updates.
+The plugin ships with a built-in GitHub Releases checker so installed users see updates inside the normal **Plugins → Updates** screen — same as plugins from wordpress.org.
+
+**One-time setup before the first release:**
+
+1. Edit [wp-plugin/friend-r-profile-builder/friend-r-profile-builder.php](wp-plugin/friend-r-profile-builder/friend-r-profile-builder.php)
+2. Change this line:
+   ```php
+   define( 'FRPB_GITHUB_REPO', 'YOUR_GITHUB_USERNAME/friend-r-profile-builder' );
+   ```
+   to your actual `owner/repo` (e.g. `melvicmonje/friend-r-profile-builder`)
+3. Commit, build, tag, push — GitHub Actions cuts the release zip
+4. Distribute the v1.0.0 zip to early users
+
+**From v1.0.0 onwards**, the plugin polls `https://api.github.com/repos/<owner>/<repo>/releases/latest` (cached 12h) and self-updates from the `.zip` asset attached to each release.
+
+How users experience updates:
+- Visit any WP admin page → if a newer version is available, a banner appears in **Plugins → Installed Plugins**
+- "View details" shows the release notes (rendered from the GitHub release body Markdown)
+- "Update Now" downloads + replaces the plugin in-place
+
+The updater code lives at [wp-plugin/friend-r-profile-builder/includes/github-updater.php](wp-plugin/friend-r-profile-builder/includes/github-updater.php). It only runs in `admin_init` (no public-page load impact) and uses the standard `pre_set_site_transient_update_plugins` hook.
 
 ## License
 
