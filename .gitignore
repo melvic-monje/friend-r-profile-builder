@@ -30,3 +30,6 @@ public/audio/ezra-theme.wav
 
 # Anthropic memory directory
 memory/
+
+# Anthropic / Claude Code harness state
+.claude/
