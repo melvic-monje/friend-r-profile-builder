@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.9 =
+* Fix: view_count not incrementing for anonymous visitors on hosts with page/CDN caching (Hostinger, Cloudflare, WP Rocket). Logged-in admins bypassed cache so it looked like only admin clicks counted; anonymous visitors were served cached REST responses, skipping the increment. Now sends `Cache-Control: no-store` headers from the REST endpoint + cache-buster query param on the client fetch.
 
 = 1.0.8 =
 * Fix: view_count not incrementing on profile reloads in the same browser. Forces fresh backend hits with `cache: 'no-store'` so each visit counts.

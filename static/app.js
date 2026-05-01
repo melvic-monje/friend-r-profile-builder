@@ -178,7 +178,9 @@
   async function fetchProfileBySlug(slug) {
     if (!HAS_BACKEND) return null;
     try {
-      const r = await apiGet(`profile/${encodeURIComponent(slug)}`);
+      // Append a cache-buster — defends against any CDN / WP page cache that
+      // would otherwise serve a stale REST response and skip the view_count bump.
+      const r = await apiGet(`profile/${encodeURIComponent(slug)}?_=${Date.now()}`);
       if (r && r.ok && r.state) return r.state;
     } catch (_) { /* 404 etc */ }
     return null;

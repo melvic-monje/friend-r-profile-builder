@@ -249,10 +249,15 @@ function frpb_rest_load_profile( $request ) {
 
 	$state = json_decode( $row->state_json, true );
 	if ( ! is_array( $state ) ) { $state = array(); }
-	return rest_ensure_response( array(
+	$response = rest_ensure_response( array(
 		'ok'           => true,
 		'username'     => $row->username,
 		'display_name' => $row->display_name,
 		'state'        => $state,
 	) );
+	// No-cache headers so CDN / WP page cache / browsers don't serve stale responses
+	// (which would skip the view_count increment above).
+	$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+	$response->header( 'Pragma', 'no-cache' );
+	return $response;
 }
