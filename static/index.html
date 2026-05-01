@@ -197,28 +197,32 @@
 </div>
 
 <!-- "Edit this profile" floating button shown only when in view mode -->
-<a id="edit-mode-btn" href="?" class="floating-edit-btn">&laquo; Edit / Make Your Own</a>
+<a id="edit-mode-btn" href="?" class="floating-edit-btn">&#127881; Make Your Own friend_r Profile &raquo;</a>
 
-<!-- Email gate splash (shown on first builder visit when backend is configured) -->
+<!-- Optional email modal (shown on Preview/Share, only once per device) -->
 <div id="email-gate" class="intro-modal" hidden>
   <div class="intro-modal-card">
-    <div class="intro-eyebrow">friend_r &mdash; one quick step</div>
-    <h2>Drop your email to start building</h2>
-    <p>Welcome. To start customizing your friend_r profile,
-       just enter your email below. We'll save your spot and your link.</p>
+    <div class="intro-eyebrow">From the maker</div>
+    <h2>Did you enjoy this? <span class="wave">&#127881;</span></h2>
+    <p>I make weird, nostalgic internet projects when I get bored.
+       Drop your email if you'd like a heads-up when I build the next one &mdash;
+       I'll keep in touch. No spam, just the cool stuff.</p>
     <form id="email-gate-form">
-      <input type="email" name="email" placeholder="you@example.com" required>
+      <input type="email" name="email" placeholder="you@example.com">
       <label class="optin-label">
-        <input type="checkbox" name="opt_in" value="1">
-        <span>Send me occasional emails from VCFY about updates and new features.</span>
+        <input type="checkbox" name="opt_in" value="1" checked>
+        <span>Yes, send me occasional emails when there's something new from VCFY.</span>
       </label>
       <button type="submit" class="btn btn-primary intro-enter">
-        Start Building &raquo;
+        Keep me posted &raquo;
+      </button>
+      <button type="button" id="email-skip-btn" class="btn-link-skip">
+        No thanks, just continue
       </button>
       <div class="email-gate-error" id="email-gate-error" hidden></div>
     </form>
     <p class="intro-disclaimer">
-      We won't share your email. Unsubscribe anytime. Fan-made recreation for entertainment only.
+      Won't share your email. Unsubscribe anytime. Fan-made recreation for entertainment only.
       Not affiliated with Friendster&reg;.
     </p>
   </div>

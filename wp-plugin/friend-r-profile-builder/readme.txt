@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,11 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.10 =
+* Email is now optional, no longer a gate at builder entry. Modal appears on first Preview/Share click with a Skip option; remembered per device.
+* Modal copy rewritten to be warm + personal ("from the maker, did you enjoy this?") instead of corporate.
+* "Make Your Own" CTA in view-mode is now a prominent pulsing orange pill at the bottom-center of the screen — way harder to miss than the previous tiny corner pill.
 
 = 1.0.9 =
 * Fix: view_count not incrementing for anonymous visitors on hosts with page/CDN caching (Hostinger, Cloudflare, WP Rocket). Logged-in admins bypassed cache so it looked like only admin clicks counted; anonymous visitors were served cached REST responses, skipping the increment. Now sends `Cache-Control: no-store` headers from the REST endpoint + cache-buster query param on the client fetch.

@@ -867,23 +867,33 @@
     const m = $('#email-gate');
     if (m) m.hidden = true;
   }
+  // Pending callback fired after the modal is closed (submit OR skip)
+  let _emailModalCb = null;
+
   function bindEmailGate() {
     const form = $('#email-gate-form');
     const errorEl = $('#email-gate-error');
+    const skipBtn = $('#email-skip-btn');
     if (!form) return;
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.hidden = true;
       const fd = new FormData(form);
       const email = String(fd.get('email') || '').trim();
       const opt_in = !!fd.get('opt_in');
-      if (!email) return;
+      if (!email) {
+        // Treat empty submit as a skip — don't error
+        skipModal();
+        return;
+      }
       try {
         const r = await apiPost('lead', { email, opt_in });
         if (r && r.lead_id) {
-          saveLead({ leadId: r.lead_id, email, opt_in });
+          saveLead({ leadId: r.lead_id, email, opt_in, fromModal: true });
           hideEmailGate();
-          showToast('Welcome! Build away.');
+          showToast('Saved your email — thanks!');
+          fireCallback();
         } else {
           throw new Error('Bad response');
         }
@@ -893,6 +903,32 @@
         errorEl.hidden = false;
       }
     });
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => skipModal());
+    }
+  }
+
+  function skipModal() {
+    saveLead({ leadId: 0, email: '', opt_in: 0, skipped: true });
+    hideEmailGate();
+    fireCallback();
+  }
+  function fireCallback() {
+    const cb = _emailModalCb;
+    _emailModalCb = null;
+    if (typeof cb === 'function') {
+      try { cb(); } catch (e) { console.error(e); }
+    }
+  }
+
+  // Show the email modal if the user hasn't decided yet, then run `cb()`.
+  // If they've already decided (entered or skipped), run cb() immediately.
+  function maybeAskForEmail(cb) {
+    if (!HAS_BACKEND) return cb();
+    if (loadLead()) return cb(); // already decided (lead saved or skip flag set)
+    _emailModalCb = cb;
+    showEmailGate();
   }
 
   // ---------------- Reset ----------------
@@ -941,20 +977,28 @@
   // ---------------- Share modal ----------------
   async function openShareModal() {
     const modal = $('#share-modal');
-
-    // If we have a backend, save the profile first so the URL becomes ?p=<username_xxxx>
     if (HAS_BACKEND) {
       if (!requireUsername()) return;
-      try {
-        showToast('Saving your profile…');
-        await saveProfileToBackend();
-      } catch (err) {
-        console.error(err);
-        showToast(err.message || 'Could not save profile.');
-        return; // don't open modal with a broken URL
-      }
     }
 
+    // Wrap the rest in the optional-email gate so it only fires once per device
+    maybeAskForEmail(async () => {
+      if (HAS_BACKEND) {
+        try {
+          showToast('Saving your profile…');
+          await saveProfileToBackend();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message || 'Could not save profile.');
+          return;
+        }
+      }
+      _populateShareModal();
+    });
+  }
+
+  function _populateShareModal() {
+    const modal = $('#share-modal');
     const url = buildShareUrl();
     $('#share-url').value = url;
     const enc = encodeURIComponent(url);
@@ -1035,28 +1079,29 @@
     const viewBtn = $('#view-mode-btn');
     if (!viewBtn) return;
     viewBtn.addEventListener('click', async () => {
-      // With a backend, do the same save flow as Share — we get a short URL + verify the
-      // profile actually saves before we drop the user into view-mode.
       if (HAS_BACKEND) {
         if (!requireUsername()) return;
-        try {
-          showToast('Saving your profile…');
-          await saveProfileToBackend();
-        } catch (err) {
-          console.error(err);
-          showToast(err.message || 'Could not save profile.');
-          return;
-        }
-        // Update the address bar to the short personalized URL (no page reload)
-        try {
-          const target = `?p=${encodeURIComponent(state.username)}`;
-          window.history.pushState(null, '', target);
-        } catch (_) {}
-      } else {
-        // No backend — fall back to hash URL
-        window.location.hash = 'p=' + encodeState(state);
       }
-      enterViewMode();
+      // Optional email modal: only shows once, on first Preview/Share click.
+      maybeAskForEmail(async () => {
+        if (HAS_BACKEND) {
+          try {
+            showToast('Saving your profile…');
+            await saveProfileToBackend();
+          } catch (err) {
+            console.error(err);
+            showToast(err.message || 'Could not save profile.');
+            return;
+          }
+          try {
+            const target = `?p=${encodeURIComponent(state.username)}`;
+            window.history.pushState(null, '', target);
+          } catch (_) {}
+        } else {
+          window.location.hash = 'p=' + encodeState(state);
+        }
+        enterViewMode();
+      });
     });
   }
   function enterViewMode() {
@@ -1184,26 +1229,19 @@
       return;
     }
 
-    // 4. Builder mode + backend configured → handle email gate
+    // 4. Builder mode + backend configured → adopt logged-in WP user lead silently if any.
+    //    No entry gate — the email modal now appears when the user clicks Preview/Share.
     if (HAS_BACKEND) {
-      // wp_localize_script stringifies ints, so "0"/"" come through as truthy strings.
-      // Coerce to a real number and only treat > 0 as a valid lead id.
       const validAutoLeadId = parseInt(CFG.autoLeadId, 10) || 0;
 
-      // Clean up junk leads from earlier versions (leadId "0" or missing).
+      // Clean up junk leads from earlier versions (leadId "0" or missing)
       const existing = loadLead();
-      if (existing && !(parseInt(existing.leadId, 10) > 0)) {
+      if (existing && !(parseInt(existing.leadId, 10) > 0) && !existing.skipped) {
         try { localStorage.removeItem(LEAD_KEY); } catch (_) {}
       }
 
-      // Adopt a real auto-lead from WP login, if any.
       if (validAutoLeadId > 0 && !loadLead()) {
         saveLead({ leadId: validAutoLeadId, email: CFG.autoLeadEmail || '', opt_in: 0, autoFromWp: true });
-      }
-
-      // No valid lead yet → ask for email
-      if (!loadLead()) {
-        showEmailGate();
       }
     }
 

@@ -686,20 +686,28 @@ body:not(.view-mode) .floating-edit-btn { display: none; }
 /* ============ Floating "Edit / Make Your Own" link (view-mode only) ============ */
 .floating-edit-btn {
   position: fixed;
-  top: 16px; right: 16px;
-  background: #fff;
-  border: 1px solid #cc3300;
-  color: #cc3300;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 12px;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ec6428, #cc3300);
+  border: 0;
+  color: white !important;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  text-decoration: none;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  text-decoration: none !important;
+  box-shadow: 0 6px 20px rgba(204,51,0,0.4);
   z-index: 50;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  animation: cta-pulse 2.5s ease-in-out infinite;
 }
-.floating-edit-btn:hover { background: #fef0ea; }
+.floating-edit-btn:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 8px 24px rgba(204,51,0,0.5); }
+@keyframes cta-pulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(204,51,0,0.4); }
+  50%      { box-shadow: 0 6px 30px rgba(204,51,0,0.7); }
+}
 
 /* ============ Share modal ============ */
 .modal {
@@ -842,6 +850,18 @@ body:not(.view-mode) .floating-edit-btn { display: none; }
   background: #fbe2e2; border: 1px solid #c97070; color: #843030;
   padding: 6px 10px; border-radius: 4px; font-size: 11px;
 }
+.btn-link-skip {
+  background: transparent;
+  border: 0;
+  color: #777;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: underline;
+  font-family: inherit;
+  margin-top: 4px;
+}
+.btn-link-skip:hover { color: #333; }
 
 .required-mark { color: #cc3300; }
 .username-status-ok { color: #3d6010; font-weight: bold; }
