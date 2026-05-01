@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,12 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.11 =
+* Admin page renamed Leads → Profiles since email is now optional. Username is the primary tracked identifier.
+* Reordered table columns: Username | Display Name | Email | Views | Opt-in | Created. Username is now the clickable link to the profile.
+* New stats row: Profiles built · Total views · With email · Opt-ins · Total rows.
+* CSV export updated to match the new column order.
 
 = 1.0.10 =
 * Email is now optional, no longer a gate at builder entry. Modal appears on first Preview/Share click with a Skip option; remembered per device.

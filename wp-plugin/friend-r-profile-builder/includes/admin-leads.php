@@ -24,8 +24,8 @@ function frpb_register_leads_menu() {
 	);
 	add_submenu_page(
 		'frpb-leads',
-		'Leads',
-		'Leads',
+		'Profiles',
+		'Profiles',
 		'manage_options',
 		'frpb-leads',
 		'frpb_render_leads_page'
@@ -82,34 +82,44 @@ function frpb_render_leads_page() {
 	$rows      = $args ? $wpdb->get_results( $wpdb->prepare( $sql, $args ) ) : $wpdb->get_results( $sql );
 
 	$total      = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table" );
+	$with_user  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE username IS NOT NULL AND username != ''" );
+	$with_email = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE email IS NOT NULL AND email != ''" );
 	$opt_in_n   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE opt_in = 1" );
-	$with_prof  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE username IS NOT NULL" );
+	$total_views= (int) $wpdb->get_var( "SELECT COALESCE(SUM(view_count),0) FROM $table" );
 	$export_url = wp_nonce_url( admin_url( 'admin.php?page=frpb-leads&frpb_export=1' ), 'frpb_export' );
 	?>
 	<div class="wrap">
-		<h1 class="wp-heading-inline">friend_r Leads</h1>
+		<h1 class="wp-heading-inline">friend_r Profiles</h1>
 		<a href="<?php echo esc_url( $export_url ); ?>" class="page-title-action">Export CSV</a>
 		<hr class="wp-header-end">
 
-		<div style="display:flex; gap:16px; margin:14px 0;">
-			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px;">
-				<strong style="font-size:24px;"><?php echo $total; ?></strong>
-				<div style="font-size:11px; color:#666;">Total leads</div>
+		<div style="display:flex; gap:12px; margin:14px 0; flex-wrap:wrap;">
+			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px; min-width:120px;">
+				<strong style="font-size:24px;"><?php echo $with_user; ?></strong>
+				<div style="font-size:11px; color:#666;">Profiles built</div>
 			</div>
-			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px;">
+			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px; min-width:120px;">
+				<strong style="font-size:24px;"><?php echo $total_views; ?></strong>
+				<div style="font-size:11px; color:#666;">Total profile views</div>
+			</div>
+			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px; min-width:120px;">
+				<strong style="font-size:24px;"><?php echo $with_email; ?></strong>
+				<div style="font-size:11px; color:#666;">With email</div>
+			</div>
+			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px; min-width:120px;">
 				<strong style="font-size:24px;"><?php echo $opt_in_n; ?></strong>
 				<div style="font-size:11px; color:#666;">Marketing opt-ins</div>
 			</div>
-			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px;">
-				<strong style="font-size:24px;"><?php echo $with_prof; ?></strong>
-				<div style="font-size:11px; color:#666;">Built a profile</div>
+			<div style="background:#fff; padding:12px 16px; border:1px solid #ccd0d4; border-radius:4px; min-width:120px;">
+				<strong style="font-size:24px;"><?php echo $total; ?></strong>
+				<div style="font-size:11px; color:#666;">Total rows</div>
 			</div>
 		</div>
 
 		<form method="get" style="margin-bottom:10px;">
 			<input type="hidden" name="page" value="frpb-leads">
 			<p class="search-box">
-				<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Search email, username, name">
+				<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="Search by username, email, or name">
 				<label style="margin-left:10px;">
 					<input type="checkbox" name="opt_in_only" value="1" <?php checked( $opt_only ); ?>>
 					opt-ins only
@@ -121,9 +131,9 @@ function frpb_render_leads_page() {
 		<table class="wp-list-table widefat fixed striped">
 			<thead>
 				<tr>
-					<th style="width:200px;">Email</th>
-					<th style="width:140px;">Username</th>
+					<th style="width:160px;">Username</th>
 					<th>Display name</th>
+					<th style="width:200px;">Email</th>
 					<th style="width:60px;">Views</th>
 					<th style="width:60px;">Opt-in</th>
 					<th style="width:140px;">Created</th>
@@ -132,12 +142,28 @@ function frpb_render_leads_page() {
 			</thead>
 			<tbody>
 				<?php if ( empty( $rows ) ) : ?>
-					<tr><td colspan="7" style="text-align:center; padding:24px; color:#888;">No leads yet.</td></tr>
+					<tr><td colspan="7" style="text-align:center; padding:24px; color:#888;">No profiles yet.</td></tr>
 				<?php else : foreach ( $rows as $row ) : ?>
 					<tr>
-						<td><a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ?: '—' ); ?></a></td>
-						<td><?php echo $row->username ? esc_html( $row->username ) : '<span style="color:#888;">—</span>'; ?></td>
+						<td>
+							<?php if ( $row->username ) : ?>
+								<?php if ( $row->share_url ) : ?>
+									<a href="<?php echo esc_url( $row->share_url ); ?>" target="_blank"><strong><?php echo esc_html( $row->username ); ?></strong></a>
+								<?php else : ?>
+									<strong><?php echo esc_html( $row->username ); ?></strong>
+								<?php endif; ?>
+							<?php else : ?>
+								<span style="color:#888;">—</span>
+							<?php endif; ?>
+						</td>
 						<td><?php echo esc_html( $row->display_name ?: '—' ); ?></td>
+						<td>
+							<?php if ( $row->email ) : ?>
+								<a href="mailto:<?php echo esc_attr( $row->email ); ?>"><?php echo esc_html( $row->email ); ?></a>
+							<?php else : ?>
+								<span style="color:#888;">— <em style="color:#aaa; font-size:11px;">(skipped)</em></span>
+							<?php endif; ?>
+						</td>
 						<td><?php echo (int) $row->view_count; ?></td>
 						<td><?php echo $row->opt_in ? '✓' : '<span style="color:#888;">—</span>'; ?></td>
 						<td><?php echo esc_html( mysql2date( 'M j, Y g:i a', $row->created_at ) ); ?></td>
@@ -145,7 +171,7 @@ function frpb_render_leads_page() {
 							<?php if ( $row->share_url ) : ?>
 								<a href="<?php echo esc_url( $row->share_url ); ?>" target="_blank" class="button button-small">View</a>
 							<?php endif; ?>
-							<form method="post" style="display:inline;" onsubmit="return confirm('Delete this lead?');">
+							<form method="post" style="display:inline;" onsubmit="return confirm('Delete this row?');">
 								<?php wp_nonce_field( 'frpb_leads_action' ); ?>
 								<input type="hidden" name="frpb_action" value="delete">
 								<input type="hidden" name="lead_id" value="<?php echo (int) $row->id; ?>">
@@ -168,16 +194,16 @@ function frpb_export_csv() {
 	if ( ! current_user_can( 'manage_options' ) ) { wp_die( 'Forbidden' ); }
 	global $wpdb;
 	$table = frpb_table_name();
-	$rows  = $wpdb->get_results( "SELECT email, username, display_name, share_url, view_count, opt_in, created_at FROM $table ORDER BY created_at DESC", ARRAY_A );
+	$rows  = $wpdb->get_results( "SELECT username, display_name, email, share_url, view_count, opt_in, created_at FROM $table ORDER BY created_at DESC", ARRAY_A );
 
 	nocache_headers();
 	header( 'Content-Type: text/csv; charset=utf-8' );
-	header( 'Content-Disposition: attachment; filename=friend-r-leads-' . date( 'Y-m-d' ) . '.csv' );
+	header( 'Content-Disposition: attachment; filename=friend-r-profiles-' . date( 'Y-m-d' ) . '.csv' );
 	$out = fopen( 'php://output', 'w' );
-	fputcsv( $out, array( 'Email', 'Username', 'Display Name', 'Share URL', 'View Count', 'Opt-in', 'Created' ) );
+	fputcsv( $out, array( 'Username', 'Display Name', 'Email', 'Share URL', 'View Count', 'Opt-in', 'Created' ) );
 	foreach ( $rows as $r ) {
 		fputcsv( $out, array(
-			$r['email'], $r['username'], $r['display_name'], $r['share_url'],
+			$r['username'], $r['display_name'], $r['email'], $r['share_url'],
 			$r['view_count'], $r['opt_in'] ? 'yes' : 'no', $r['created_at'],
 		) );
 	}
