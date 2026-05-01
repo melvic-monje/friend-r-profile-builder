@@ -203,7 +203,8 @@
 
   async function apiGet(path) {
     const res = await fetch(apiUrl(path), {
-      headers: CFG.nonce ? { 'X-WP-Nonce': CFG.nonce } : {}
+      headers: CFG.nonce ? { 'X-WP-Nonce': CFG.nonce } : {},
+      cache: 'no-store' // ensure profile loads always hit the backend so view_count increments
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw Object.assign(new Error(json.message || 'Request failed'), { status: res.status, body: json });
