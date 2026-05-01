@@ -4,7 +4,7 @@ Tags: nostalgia, profile, retro, friendster, builder
 Requires at least: 5.5
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,9 @@ Roughly 100&ndash;150KB if the profile has both a photo and a background image (
 Yes. Edit `templates/builder.php` and look for the `<div id="intro-modal">` block. The plugin shows different text to logged-in WP users vs. logged-out visitors.
 
 == Changelog ==
+
+= 1.0.8 =
+* Fix: view_count not incrementing on profile reloads in the same browser. Forces fresh backend hits with `cache: 'no-store'` so each visit counts.
 
 = 1.0.7 =
 * Fix "Cookie check failed" error on REST endpoints for logged-in users. Switched the nonce action from a custom `frpb_rest` to the standard `wp_rest` so it satisfies WP's own REST cookie-check.
